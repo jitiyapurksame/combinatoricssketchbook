@@ -1,0 +1,2945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>J.J.'s Combinatorics Sketchbook</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Combinatorics" />
+<meta name="description" content="Chief Engineer's Counting Manual — J.J.'s Combinatorics Sketchbook." />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #F1ECDD;
+  --card: #FFFFFF;
+  --ink: #16293A;
+  --ink-soft: #5B6B78;
+  --teal: #0E2A45;
+  --teal-dark: #081826;
+  --amber: #D9A441;
+  --amber-dark: #B3822C;
+  --coral: #C1503A;
+  --success: #3FA37A;
+  --success-bg: #E6F5EE;
+  --nudge-bg: #FCEFD9;
+  --nudge-ink: #8A5A18;
+  --danger: #C0392B;
+  --danger-bg: #FBEAE7;
+  --mono: 'Space Mono', 'Courier New', monospace;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #app { min-height: 100%; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(0deg, rgba(14,42,69,0.035) 0px, rgba(14,42,69,0.035) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(90deg, rgba(14,42,69,0.035) 0px, rgba(14,42,69,0.035) 1px, transparent 1px, transparent 28px);
+  color: var(--ink);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+button, input, textarea { font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; }
+
+.wrap { max-width: 560px; margin: 0 auto; padding-bottom: 48px; }
+
+/* ---- Header ---- */
+.hdr {
+  background: var(--teal); color: #fff; padding: 20px 18px 18px;
+  border-bottom: 3px solid var(--amber); text-align: center; position: relative;
+}
+.hdr-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber); }
+.hdr-title { font-family: var(--mono); font-weight: 700; font-size: 21px; margin-top: 6px; letter-spacing: 0.01em; }
+.hdr-sub { color: rgba(255,255,255,0.72); font-size: 12.5px; margin-top: 6px; }
+.hdr-back {
+  position: absolute; left: 14px; top: 18px; font-family: var(--mono); font-size: 12px;
+  color: var(--amber); background: none; border: none; padding: 6px; font-weight: 700;
+}
+
+/* ---- Sections ---- */
+.section { padding: 16px 16px 0; }
+.section-label {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-soft); margin-bottom: 10px;
+}
+
+/* ---- Part progress ---- */
+.voyage-card {
+  background: var(--teal); color: #fff; border-radius: 10px; padding: 14px 16px;
+  border: 2px dashed var(--amber); box-shadow: 0 3px 12px rgba(14,42,69,0.18);
+}
+.voyage-row { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; }
+.voyage-row .num { font-size: 13px; color: var(--amber); font-weight: 700; }
+.voyage-track { height: 10px; background: rgba(255,255,255,0.18); border-radius: 6px; overflow: hidden; margin-top: 8px; }
+.voyage-fill { height: 100%; background: linear-gradient(90deg, var(--amber), #fff); border-radius: 6px; transition: width .4s ease; }
+
+/* ---- Chapter cards ---- */
+.missions { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.mission-card {
+  background: var(--card); border-radius: 10px; padding: 16px;
+  box-shadow: 0 2px 10px rgba(14,42,69,0.10); border: 1px solid rgba(14,42,69,0.10);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.mission-card.locked { opacity: 0.55; }
+.mission-top { display: flex; gap: 12px; align-items: flex-start; }
+.mission-emoji {
+  font-size: 24px; width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center;
+  justify-content: center; background: var(--bg); border-radius: 8px; border: 1px dashed var(--amber-dark);
+}
+.mission-info { flex: 1; min-width: 0; }
+.mission-name { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--teal); }
+.mission-desc { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.mission-stats {
+  display: flex; gap: 10px; flex-wrap: wrap; font-family: var(--mono); font-size: 11px;
+  color: var(--ink-soft); background: var(--bg); border-radius: 6px; padding: 8px 10px;
+}
+.mission-stats .stat strong { color: var(--teal); }
+.mission-btn {
+  display: block; text-align: center; background: var(--teal); color: #fff; font-weight: 700;
+  font-size: 13.5px; padding: 11px; border-radius: 8px; letter-spacing: 0.01em; border: none; width: 100%;
+}
+.mission-btn:disabled { background: var(--ink-soft); }
+.mission-btn.boss { background: var(--coral); }
+.stars { font-size: 13px; letter-spacing: 1px; }
+.part-header {
+  font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--teal);
+  margin: 18px 0 4px; padding-left: 2px; letter-spacing: 0.02em;
+}
+.part-sub { font-size: 11.5px; color: var(--ink-soft); padding-left: 2px; margin-bottom: 6px; }
+
+/* ---- Stage tracker ---- */
+.stage-tracker { display: flex; gap: 6px; padding: 14px 16px 0; }
+.stage-dot {
+  flex: 1; text-align: center; padding: 7px 2px; border-radius: 7px; font-family: var(--mono);
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.02em; background: var(--card);
+  color: var(--ink-soft); border: 1px solid rgba(14,42,69,0.12);
+}
+.stage-dot.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+.stage-dot.done { background: var(--success-bg); color: #1e5c40; border-color: rgba(63,163,122,0.4); }
+
+/* ---- Concept card ---- */
+.concept-card {
+  background: var(--card); border-radius: 12px; margin: 14px 16px 0; padding: 18px;
+  border: 2px dashed var(--amber-dark); box-shadow: 0 2px 10px rgba(14,42,69,0.08);
+}
+.concept-eyebrow { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--amber-dark); text-transform: uppercase; letter-spacing: 0.08em; }
+.concept-title { font-family: var(--mono); font-weight: 700; font-size: 17px; color: var(--teal); margin-top: 4px; }
+.concept-body { font-size: 14.5px; line-height: 1.55; color: var(--ink); margin-top: 10px; }
+.concept-body p { margin: 0 0 10px; }
+.concept-body strong { color: var(--teal); }
+.callout {
+  background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-top: 10px;
+  border-left: 3px solid var(--amber); font-size: 13.5px; line-height: 1.5;
+}
+.callout.engineer { border-left-color: var(--teal); }
+
+/* ---- Widgets: items row ---- */
+.item-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.item-chip {
+  font-family: var(--mono); font-size: 15px; font-weight: 700; padding: 10px 14px; border-radius: 8px;
+  background: var(--bg); border: 2px solid var(--teal); color: var(--teal); user-select: none;
+}
+.item-chip.picked { background: var(--teal); color: #fff; }
+.item-chip.in-pick { opacity: 0.3; pointer-events: none; }
+.lb-instruction { font-size: 13px; color: var(--ink-soft); margin-top: 12px; }
+.lb-current { font-family: var(--mono); font-size: 13px; margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+.lb-current strong { color: var(--teal); font-size: 15px; }
+
+/* ---- List builder ---- */
+.list-builder { margin-top: 12px; }
+.lb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px,1fr)); gap: 8px; margin-top: 10px; }
+.lb-cell {
+  font-family: var(--mono); font-size: 13px; font-weight: 700; text-align: center; padding: 9px 4px;
+  border-radius: 6px; border: 1.5px dashed var(--amber-dark); background: var(--bg); color: var(--ink-soft);
+}
+.lb-cell.found { background: var(--success-bg); border: 1.5px solid var(--success); color: #1e5c40; text-decoration: line-through; text-decoration-color: rgba(30,92,64,0.4); }
+.lb-progress { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); margin-top: 8px; }
+.lb-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+
+/* ---- Buttons generic ---- */
+.btn { border-radius: 8px; padding: 11px 14px; font-weight: 700; font-size: 13.5px; border: 2px solid var(--teal); background: transparent; color: var(--teal); }
+.btn.primary { background: var(--teal); color: #fff; }
+.btn.amber { border-color: var(--amber-dark); color: var(--amber-dark); background: var(--nudge-bg); }
+.btn.small { padding: 8px 10px; font-size: 12px; }
+.btn:disabled { opacity: 0.4; }
+
+/* ---- Answer check ---- */
+.answer-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+.answer-row input {
+  flex: 1; padding: 11px 12px; border-radius: 8px; border: 2px solid var(--teal); font-family: var(--mono);
+  font-size: 15px; font-weight: 700; color: var(--teal); text-align: center; min-width: 0;
+}
+.feedback { margin-top: 10px; font-size: 13.5px; font-weight: 600; padding: 9px 12px; border-radius: 8px; display: none; }
+.feedback.show { display: block; }
+.feedback.ok { background: var(--success-bg); color: #1e5c40; }
+.feedback.no { background: var(--danger-bg); color: var(--danger); }
+
+/* ---- Nav row ---- */
+.stage-nav { display: flex; gap: 10px; padding: 16px 16px 0; }
+.stage-nav .btn { flex: 1; }
+
+/* ---- Star bar ---- */
+.star-bar {
+  display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 0;
+  font-family: var(--mono); font-size: 12px; color: var(--ink-soft);
+}
+
+/* ---- SVG containers ---- */
+.svg-box { margin-top: 12px; background: var(--bg); border-radius: 8px; padding: 8px; border: 1px dashed var(--amber-dark); overflow-x: auto; }
+.svg-box svg { display: block; margin: 0 auto; }
+
+/* ---- Grid table ---- */
+.grid-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-family: var(--mono); font-size: 12px; }
+.grid-table th, .grid-table td { border: 1px solid rgba(14,42,69,0.15); padding: 8px 4px; text-align: center; }
+.grid-table th { background: var(--teal); color: #fff; }
+.grid-table td.corner { background: var(--teal); color: #fff; }
+.grid-table td.filled { background: var(--success-bg); color: #1e5c40; font-weight: 700; }
+
+/* ---- Boss card ---- */
+.boss-card { background: var(--teal-dark); color: #fff; border-radius: 12px; margin: 14px 16px 0; padding: 18px; border: 2px solid var(--coral); }
+.boss-eyebrow { font-family: var(--mono); font-size: 11px; color: var(--coral); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.boss-title { font-family: var(--mono); font-weight: 700; font-size: 18px; margin-top: 4px; }
+.boss-step { margin-top: 12px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; border-left: 3px solid var(--coral); }
+.boss-step-label { font-family: var(--mono); font-size: 11px; color: var(--coral); font-weight: 700; }
+.boss-step p { font-size: 13.5px; line-height: 1.5; margin: 6px 0 0; color: rgba(255,255,255,0.92); }
+
+/* ---- Draw pad ---- */
+.pad-box { margin-top: 12px; background: #fff; border-radius: 8px; border: 2px dashed var(--amber-dark); touch-action: none; }
+.pad-box canvas { display: block; width: 100%; touch-action: none; border-radius: 8px; }
+.pad-tools { display: flex; gap: 8px; margin-top: 8px; }
+
+/* ---- Error log ---- */
+.err-type-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.err-chip {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 700; padding: 8px 10px; border-radius: 6px;
+  border: 1.5px solid var(--ink-soft); color: var(--ink-soft); background: var(--card);
+}
+.err-chip.sel { background: var(--teal); color: #fff; border-color: var(--teal); }
+.err-log-entry {
+  background: var(--card); border-radius: 8px; padding: 10px 12px; margin-top: 8px;
+  border: 1px solid rgba(14,42,69,0.1); font-size: 12.5px;
+}
+.err-log-entry .et { font-family: var(--mono); font-weight: 700; color: var(--coral); font-size: 11px; }
+textarea.note {
+  width: 100%; margin-top: 10px; padding: 10px; border-radius: 8px; border: 2px solid var(--teal);
+  font-size: 13.5px; min-height: 60px; resize: vertical;
+}
+
+.foot-note { margin: 18px 16px 0; font-size: 11px; color: var(--ink-soft); text-align: center; line-height: 1.6; }
+.foot-note code { font-family: var(--mono); background: var(--card); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(14,42,69,0.1); }
+</style>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+
+<script>
+(function () {
+"use strict";
+
+/* =========================================================
+   COMBINATORIAL GENERATORS — live algorithms, never pre-baked
+   ========================================================= */
+
+function kCombinations(arr, k) {
+  var results = [];
+  function helper(start, chosen) {
+    if (chosen.length === k) { results.push(chosen.slice()); return; }
+    for (var i = start; i < arr.length; i++) {
+      chosen.push(arr[i]);
+      helper(i + 1, chosen);
+      chosen.pop();
+    }
+  }
+  helper(0, []);
+  return results;
+}
+
+function kPermutations(arr, k) {
+  var results = [];
+  function helper(chosen, used) {
+    if (chosen.length === k) { results.push(chosen.slice()); return; }
+    for (var i = 0; i < arr.length; i++) {
+      if (used[i]) continue;
+      used[i] = true;
+      chosen.push(arr[i]);
+      helper(chosen, used);
+      chosen.pop();
+      used[i] = false;
+    }
+  }
+  helper([], {});
+  return results;
+}
+
+function kSequences(arr, k) {
+  // cartesian product, repeats allowed, order matters
+  var results = [[]];
+  for (var pos = 0; pos < k; pos++) {
+    var next = [];
+    for (var r = 0; r < results.length; r++) {
+      for (var a = 0; a < arr.length; a++) {
+        next.push(results[r].concat([arr[a]]));
+      }
+    }
+    results = next;
+  }
+  return results;
+}
+
+function factorial(n) { var f = 1; for (var i = 2; i <= n; i++) f *= i; return f; }
+
+function climbCompositions(n) {
+  // All sequences of 1s and 2s that sum to n (ladder-climbing paths). Live recursive algorithm, never hardcoded.
+  if (n === 0) return [[]];
+  if (n < 0) return [];
+  var results = [];
+  climbCompositions(n - 1).forEach(function (seq) { results.push(seq.concat([1])); });
+  climbCompositions(n - 2).forEach(function (seq) { results.push(seq.concat([2])); });
+  return results;
+}
+
+/* =========================================================
+   STORAGE
+   ========================================================= */
+
+var STORE_KEY = "cs_progress_v1";
+var ERR_KEY = "cs_errorlog_v1";
+
+function loadProgress() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    return raw ? JSON.parse(raw) : { chapters: {}, xp: 0, drawMemory: {} };
+  } catch (e) { return { chapters: {}, xp: 0, drawMemory: {} }; }
+}
+function saveProgress(p) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(p)); } catch (e) {}
+}
+function loadErrorLog() {
+  try {
+    var raw = localStorage.getItem(ERR_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+function saveErrorLog(list) {
+  try { localStorage.setItem(ERR_KEY, JSON.stringify(list)); } catch (e) {}
+}
+
+var PROGRESS = loadProgress();
+
+function getChapterState(chId) {
+  if (!PROGRESS.chapters[chId]) {
+    PROGRESS.chapters[chId] = { stage: 0, stars: 3, done: false, stageDone: [false,false,false,false,false] };
+  }
+  return PROGRESS.chapters[chId];
+}
+function useHint(chId) {
+  var st = getChapterState(chId);
+  if (st.stars > 1) st.stars -= 1;
+  saveProgress(PROGRESS);
+}
+function markStageDone(chId, stageIdx) {
+  var st = getChapterState(chId);
+  st.stageDone[stageIdx] = true;
+  if (stageIdx === 4) { st.done = true; PROGRESS.xp = (PROGRESS.xp || 0) + 20 + (st.stars * 5); }
+  saveProgress(PROGRESS);
+}
+
+/* =========================================================
+   APP STATE / ROUTING
+   ========================================================= */
+
+var route = { view: "home", chapterId: null, stage: 0 };
+
+function nav(view, chapterId, stage) {
+  route = { view: view, chapterId: chapterId || null, stage: stage || 0 };
+  window.scrollTo(0, 0);
+  render();
+}
+
+/* =========================================================
+   CHAPTER DATA — Part A: Boiler Room Basics
+   ========================================================= */
+
+var CHAPTERS = [
+  {
+    id: "ch1", part: "A", num: 1, emoji: "🛟",
+    title: "What Does Count Really Mean?",
+    subtitle: "Lifebelts on deck & the Bridge's signal flags"
+  },
+  {
+    id: "ch2", part: "A", num: 2, emoji: "🧱",
+    title: "Systematic Counting",
+    subtitle: "Watch-pairing the deck officers without missing one"
+  },
+  {
+    id: "ch3", part: "A", num: 3, emoji: "🌳",
+    title: "Tree Diagrams",
+    subtitle: "Engine room dial settings, branch by branch"
+  },
+  {
+    id: "ch4", part: "A", num: 4, emoji: "📋",
+    title: "Tables & Grids",
+    subtitle: "The cabin deck-and-class grid"
+  },
+  {
+    id: "ch5", part: "B", num: 5, emoji: "🔧",
+    title: "Addition Principle",
+    subtitle: "One tool from EITHER pile — wrenches or spanners"
+  },
+  {
+    id: "ch6", part: "B", num: 6, emoji: "📡",
+    title: "Multiplication Principle",
+    subtitle: "The wireless room's three independent dials"
+  },
+  {
+    id: "ch7", part: "B", num: 7, emoji: "⚓",
+    title: "Permutations",
+    subtitle: "Building a bridge watch roster, one shrinking pool"
+  },
+  {
+    id: "ch8", part: "B", num: 8, emoji: "🔍",
+    title: "Combinations",
+    subtitle: "Choosing the boiler inspection team — why divide by r!"
+  },
+  {
+    id: "ch9", part: "C", num: 9, emoji: "🚫",
+    title: "Restrictions",
+    subtitle: "The cracked funnel — fix the restricted slot first"
+  },
+  {
+    id: "ch10", part: "C", num: 10, emoji: "➖",
+    title: "Complementary Counting",
+    subtitle: "Building the \"bad\" team so Total minus Bad gives Good"
+  },
+  {
+    id: "ch11", part: "C", num: 11, emoji: "🪜",
+    title: "Repetition & Recursion",
+    subtitle: "Lantern codes that repeat, and the engine room ladder"
+  },
+  {
+    id: "ch12", part: "D", num: 12, emoji: "🧰",
+    title: "Chief Engineer's Toolkit",
+    subtitle: "All 8 tools, tool-detective practice, and the final ladder"
+  }
+];
+
+var BOSS1 = { id: "boss1", emoji: "👹", title: "The Captain's Missing Signal", subtitle: "Boss Battle 1 — Part A Checkpoint" };
+var BOSS2 = { id: "boss2", emoji: "👹", title: "The Bridge Team Assembly", subtitle: "Boss Battle 2 — Part B Checkpoint" };
+var BOSS3 = { id: "boss3", emoji: "👹", title: "The Captain's Final Inspection Day", subtitle: "Boss Battle 3 — Part C Checkpoint" };
+var BOSS4 = { id: "boss4", emoji: "🎓", title: "The Graduation Voyage", subtitle: "Boss Battle 4 — Final Checkpoint, All Parts" };
+
+/* =========================================================
+   SHARED SMALL RENDERERS
+   ========================================================= */
+
+function starsHtml(n) {
+  var s = "";
+  for (var i = 0; i < 3; i++) s += (i < n ? "★" : "☆");
+  return s;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function buildTreeSVG(rootLabel, level1, level2byParent, width) {
+  // level1: array of labels. level2byParent: object label -> array of labels
+  width = width || 520;
+  var l1n = level1.length;
+  var totalLeaves = 0;
+  level1.forEach(function (p) { totalLeaves += level2byParent[p].length; });
+  var height = 70 + totalLeaves * 30 + 40;
+  var trunkX = 60, trunkY = 40;
+  var svg = '<svg viewBox="0 0 ' + width + ' ' + height + '" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<text x="' + trunkX + '" y="' + (trunkY - 14) + '" font-family="Space Mono" font-size="12" font-weight="700" fill="#0E2A45">' + escapeHtml(rootLabel) + '</text>';
+  svg += '<circle cx="' + trunkX + '" cy="' + trunkY + '" r="5" fill="#0E2A45" />';
+
+  var l1x = 190;
+  var leafIndex = 0;
+  var l1positions = [];
+  // compute vertical centers for each level1 branch based on its children count
+  var cursorY = 55;
+  level1.forEach(function (p, i) {
+    var children = level2byParent[p];
+    var blockHeight = children.length * 30;
+    var centerY = cursorY + blockHeight / 2;
+    l1positions.push(centerY);
+    cursorY += blockHeight;
+  });
+
+  level1.forEach(function (p, i) {
+    var y1 = l1positions[i];
+    svg += '<line x1="' + trunkX + '" y1="' + trunkY + '" x2="' + l1x + '" y2="' + y1 + '" stroke="#D9A441" stroke-width="2" />';
+    svg += '<circle cx="' + l1x + '" cy="' + y1 + '" r="4.5" fill="#D9A441" />';
+    svg += '<text x="' + (l1x + 10) + '" y="' + (y1 + 4) + '" font-family="Space Mono" font-size="12" font-weight="700" fill="#0E2A45">' + escapeHtml(p) + '</text>';
+
+    var children = level2byParent[p];
+    var l2x = width - 110;
+    var childStartY = l1positions[i] - (children.length * 30) / 2 + 15;
+    children.forEach(function (c, j) {
+      var y2 = childStartY + j * 30;
+      svg += '<line x1="' + (l1x + 6) + '" y1="' + y1 + '" x2="' + l2x + '" y2="' + y2 + '" stroke="#0E2A45" stroke-width="1.5" opacity="0.55" />';
+      svg += '<circle cx="' + l2x + '" cy="' + y2 + '" r="4" fill="#0E2A45" />';
+      svg += '<text x="' + (l2x + 10) + '" y="' + (y2 + 4) + '" font-family="Space Mono" font-size="11.5" fill="#16293A">' + escapeHtml(c) + '</text>';
+      leafIndex++;
+    });
+  });
+
+  svg += '</svg>';
+  return svg;
+}
+
+/* =========================================================
+   HOME (Chart Room)
+   ========================================================= */
+
+var PARTS = [
+  { key: "A", title: "PART A &middot; Boiler Room Basics", sub: "Counting foundations — before any formula.", boss: BOSS1 },
+  { key: "B", title: "PART B &middot; Engine Design Choices", sub: "Addition, Multiplication, Permutations &amp; Combinations.", boss: BOSS2 },
+  { key: "C", title: "PART C &middot; Blueprint Restrictions", sub: "Restrictions, Complementary Counting &amp; Recursion.", boss: BOSS3 },
+  { key: "D", title: "PART D &middot; Chief Engineer's Toolkit", sub: "All 8 tools together — the final checkpoint.", boss: BOSS4 }
+];
+var LOCKED_PARTS = [];
+
+function chapterProgressStats() {
+  var done = 0, total = CHAPTERS.length + PARTS.length;
+  CHAPTERS.forEach(function (c) { if (getChapterState(c.id).done) done++; });
+  PARTS.forEach(function (p) { if (getChapterState(p.boss.id).done) done++; });
+  return { done: done, total: total };
+}
+
+function renderPartSection(part) {
+  var chapters = CHAPTERS.filter(function (c) { return c.part === part.key; });
+  var html = '<div class="section">';
+  html += '<div class="part-header">' + part.title + '</div>';
+  html += '<div class="part-sub">' + part.sub + '</div>';
+  html += '<div class="missions">';
+  chapters.forEach(function (c) {
+    var st = getChapterState(c.id);
+    var statLabel = st.done ? "Cleared" : (st.stage > 0 ? "Stage " + (st.stage + 1) + " / 5" : "Not started");
+    html += '<div class="mission-card">';
+    html += '<div class="mission-top"><div class="mission-emoji">' + c.emoji + '</div>';
+    html += '<div class="mission-info"><div class="mission-name">Ch.' + c.num + ' — ' + c.title + '</div>';
+    html += '<div class="mission-desc">' + c.subtitle + '</div></div></div>';
+    html += '<div class="mission-stats"><span class="stat">' + statLabel + '</span><span class="stat stars">' + starsHtml(st.stars) + '</span></div>';
+    html += '<button class="mission-btn" onclick="CSApp.nav(\'chapter\',\'' + c.id + '\',' + (st.stage || 0) + ')">' + (st.done ? "Review Chapter →" : (st.stage > 0 ? "Continue →" : "Start Mission →")) + '</button>';
+    html += '</div>';
+  });
+
+  var bossSt = getChapterState(part.boss.id);
+  var allChDone = chapters.every(function (c) { return getChapterState(c.id).done; });
+  html += '<div class="mission-card' + (allChDone ? '' : ' locked') + '">';
+  html += '<div class="mission-top"><div class="mission-emoji">' + part.boss.emoji + '</div>';
+  html += '<div class="mission-info"><div class="mission-name">' + part.boss.title + '</div>';
+  html += '<div class="mission-desc">' + part.boss.subtitle + '</div></div></div>';
+  html += '<div class="mission-stats"><span class="stat">' + (bossSt.done ? "Cleared" : (allChDone ? "Ready" : "Clear all " + chapters.length + " chapters first")) + '</span><span class="stat stars">' + starsHtml(bossSt.stars) + '</span></div>';
+  html += '<button class="mission-btn boss" ' + (allChDone ? '' : 'disabled') + ' onclick="CSApp.nav(\'' + part.boss.id + '\')">' + (bossSt.done ? "Refight Boss →" : "Enter Boss Battle →") + '</button>';
+  html += '</div>';
+
+  html += '</div></div>';
+  return html;
+}
+
+function renderHome() {
+  var stats = chapterProgressStats();
+  var pct = Math.round((stats.done / stats.total) * 100);
+
+  var html = '';
+  html += '<div class="hdr">';
+  html += '<div class="hdr-eyebrow">RMS Design Files &middot; Counting &amp; Combinatorics Wing</div>';
+  html += '<div class="hdr-title">⚓ J.J.\'s Combinatorics Sketchbook</div>';
+  html += '<div class="hdr-sub">Step 1 beats perfection — open a chapter and start.</div>';
+  html += '</div>';
+
+  html += '<div class="section"><div class="section-label">🧭 Manual Progress</div>';
+  html += '<div class="voyage-card"><div class="voyage-row"><span>CHAPTERS &amp; BOSS BATTLES CLEARED</span><span class="num">' + stats.done + ' / ' + stats.total + '</span></div>';
+  html += '<div class="voyage-track"><div class="voyage-fill" style="width:' + pct + '%"></div></div></div></div>';
+
+  PARTS.forEach(function (part) { html += renderPartSection(part); });
+
+  LOCKED_PARTS.forEach(function (lp) {
+    html += '<div class="section">';
+    html += '<div class="part-header" style="color:var(--ink-soft)">' + lp.title + '</div>';
+    html += '<div class="mission-card locked"><div class="mission-top"><div class="mission-emoji">🔒</div>';
+    html += '<div class="mission-info"><div class="mission-name">' + lp.desc + '</div></div></div></div>';
+    html += '</div>';
+  });
+
+  var boss4Done = getChapterState(BOSS4.id).done;
+  html += '<div class="section">';
+  html += '<div class="part-header">🗺️ THE FULL MANUAL</div>';
+  html += '<div class="mission-card' + (boss4Done ? '' : ' locked') + '">';
+  html += '<div class="mission-top"><div class="mission-emoji">🗺️</div>';
+  html += '<div class="mission-info"><div class="mission-name">Master Map</div>';
+  html += '<div class="mission-desc">' + (boss4Done ? "All 12 chapters, one blueprint — your graduation certificate" : "Clear Boss Battle 4 to unlock") + '</div></div></div>';
+  html += '<button class="mission-btn boss" ' + (boss4Done ? '' : 'disabled') + ' onclick="CSApp.nav(\'mastermap\')">' + (boss4Done ? "Open Master Map →" : "Locked") + '</button>';
+  html += '</div></div>';
+
+  html += '<div class="section">';
+  html += '<button class="btn" style="width:100%" onclick="CSApp.nav(\'errorlog\')">🔥 Open Error Log</button>';
+  html += '</div>';
+
+  html += '<div class="foot-note">Progress saved on this device under <code>' + STORE_KEY + '</code>. Part of J.J.\'s Engineering Academy.</div>';
+
+  document.getElementById("app").innerHTML = html;
+}
+
+/* =========================================================
+   CHAPTER CONTENT DEFINITIONS
+   Each chapter: 5 stages. Each stage: { key, label, render(chId, container) }
+   Stage render functions return HTML string AND wire up interactivity after insert.
+   ========================================================= */
+
+var STAGE_LABELS = ["Visual Model", "Mental Strategy", "General Rule", "Why It Works", "Competition Challenge"];
+
+/* ---------- Generic list-builder widget (tap-to-build, crossing-out method) ---------- */
+/* mode: 'combo' | 'perm' | 'seq'. chId used so the hint fallback costs a star, same as everywhere else. */
+var CHIP_COLORS = ["#C1503A", "#3FA37A", "#0E2A45", "#D9A441", "#8A5A18", "#5B6B78"];
+
+function listBuilderWidget(containerId, items, k, mode, chId, onAllFound) {
+  var target = mode === 'combo' ? kCombinations(items, k) : (mode === 'perm' ? kPermutations(items, k) : kSequences(items, k));
+  var found = new Array(target.length).fill(false);
+  var foundCount = 0;
+  var current = [];
+  var chipEls = [];
+
+  function colorFor(item) {
+    var idx = items.indexOf(item);
+    return CHIP_COLORS[idx % CHIP_COLORS.length];
+  }
+  function sameUnordered(a, b) {
+    if (a.length !== b.length) return false;
+    var as = a.slice().sort(), bs = b.slice().sort();
+    for (var i = 0; i < as.length; i++) if (as[i] !== bs[i]) return false;
+    return true;
+  }
+  function sameOrdered(a, b) {
+    if (a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+  function cellLabel(arr) { return arr.join(""); }
+
+  function draw() {
+    var html = '<p class="lb-instruction">Tap ' + k + ' flags to build your pick' + (mode === 'seq' ? ' (repeats allowed)' : '') + ':</p>';
+    html += '<div class="item-row" id="' + containerId + '-items"></div>';
+    html += '<div class="lb-current">Your pick: <strong id="' + containerId + '-currenttext">tap above</strong> ';
+    html += '<button class="btn small" id="' + containerId + '-clear">Clear</button></div>';
+    html += '<div class="feedback" id="' + containerId + '-fb"></div>';
+    html += '<div class="lb-grid">';
+    target.forEach(function (t, i) {
+      html += '<div class="lb-cell' + (found[i] ? ' found' : '') + '" data-i="' + i + '">' + (found[i] ? cellLabel(t) : "?") + '</div>';
+    });
+    html += '</div>';
+    html += '<div class="lb-progress">Found: ' + foundCount + ' / ' + target.length + '</div>';
+    html += '<div class="lb-btn-row"><button class="btn small amber" id="' + containerId + '-hint">Stuck? Reveal one (uses a star)</button></div>';
+    document.getElementById(containerId).innerHTML = html;
+
+    var itemsRow = document.getElementById(containerId + "-items");
+    chipEls = [];
+    items.forEach(function (it) {
+      var chip = document.createElement("div");
+      chip.className = "item-chip";
+      chip.style.borderColor = colorFor(it);
+      chip.style.color = colorFor(it);
+      chip.textContent = it;
+      chip.onclick = function () {
+        if (mode !== 'seq' && current.indexOf(it) !== -1) return;
+        if (current.length >= k) return;
+        current.push(it);
+        refreshCurrent();
+        if (current.length === k) submitPick();
+      };
+      itemsRow.appendChild(chip);
+      chipEls.push({ item: it, el: chip });
+    });
+
+    document.getElementById(containerId + "-clear").onclick = function () {
+      current = [];
+      refreshCurrent();
+      setFeedback("");
+    };
+    document.getElementById(containerId + "-hint").onclick = function () {
+      useHint(chId);
+      var idx = found.indexOf(false);
+      if (idx === -1) return;
+      found[idx] = true; foundCount++;
+      current = [];
+      draw();
+      if (foundCount === target.length && onAllFound) onAllFound(target.length, true);
+    };
+  }
+
+  function refreshCurrent() {
+    var el = document.getElementById(containerId + "-currenttext");
+    if (el) el.textContent = current.length ? current.join("") : "tap above";
+    if (mode !== 'seq') {
+      chipEls.forEach(function (c) {
+        if (current.indexOf(c.item) !== -1) c.el.classList.add("in-pick");
+        else c.el.classList.remove("in-pick");
+      });
+    }
+  }
+  function setFeedback(html, cls) {
+    var fb = document.getElementById(containerId + "-fb");
+    if (!fb) return;
+    if (!html) { fb.className = "feedback"; fb.textContent = ""; return; }
+    fb.className = "feedback show" + (cls ? " " + cls : "");
+    fb.innerHTML = html;
+  }
+
+  function submitPick() {
+    var matchIdx = -1;
+    for (var i = 0; i < target.length; i++) {
+      var isMatch = mode === 'combo' ? sameUnordered(target[i], current) : sameOrdered(target[i], current);
+      if (isMatch) { matchIdx = i; break; }
+    }
+    if (matchIdx === -1) {
+      setFeedback("That combination isn't valid here — try again.", "no");
+      current = [];
+      refreshCurrent();
+      return;
+    }
+    if (found[matchIdx]) {
+      setFeedback("You already found " + cellLabel(current) + (mode === 'combo' ? " (same bundle, different order)" : "") + " — try a different one.", "no");
+      current = [];
+      refreshCurrent();
+      return;
+    }
+    found[matchIdx] = true;
+    foundCount++;
+    var justFinished = foundCount === target.length;
+    current = [];
+    draw();
+    setFeedback("✅ Found it — " + cellLabel(target[matchIdx]) + "!", "ok");
+    if (justFinished && onAllFound) onAllFound(target.length);
+  }
+
+  draw();
+  return target.length;
+}
+
+/* ---------- Cross-product builder (heterogeneous dials, tap one option per group in order) ---------- */
+function crossBuilderWidget(containerId, groups, chId, onAllFound) {
+  var target = [[]];
+  groups.forEach(function (g) {
+    var next = [];
+    target.forEach(function (partial) {
+      g.options.forEach(function (opt) { next.push(partial.concat([opt])); });
+    });
+    target = next;
+  });
+  var found = new Array(target.length).fill(false);
+  var foundCount = 0;
+  var current = [];
+
+  function cellLabel(arr) { return arr.join(" + "); }
+
+  function draw() {
+    var html = '';
+    groups.forEach(function (g, gi) {
+      html += '<p class="lb-instruction" style="margin-top:' + (gi === 0 ? '0' : '12') + 'px">' + g.label + '</p>';
+      html += '<div class="item-row" id="' + containerId + '-g' + gi + '"></div>';
+    });
+    html += '<div class="lb-current">Your pick: <strong id="' + containerId + '-currenttext">tap above</strong> ';
+    html += '<button class="btn small" id="' + containerId + '-clear">Clear</button></div>';
+    html += '<div class="feedback" id="' + containerId + '-fb"></div>';
+    html += '<div class="lb-grid">';
+    target.forEach(function (t, i) {
+      html += '<div class="lb-cell' + (found[i] ? ' found' : '') + '" data-i="' + i + '">' + (found[i] ? cellLabel(t) : "?") + '</div>';
+    });
+    html += '</div>';
+    html += '<div class="lb-progress">Found: ' + foundCount + ' / ' + target.length + '</div>';
+    html += '<div class="lb-btn-row"><button class="btn small amber" id="' + containerId + '-hint">Stuck? Reveal one (uses a star)</button></div>';
+    document.getElementById(containerId).innerHTML = html;
+
+    groups.forEach(function (g, gi) {
+      var row = document.getElementById(containerId + '-g' + gi);
+      g.options.forEach(function (opt) {
+        var chip = document.createElement('div');
+        chip.className = 'item-chip';
+        chip.textContent = opt;
+        chip.onclick = function () {
+          if (current.length !== gi) return;
+          current.push(opt);
+          refreshCurrent();
+          if (current.length === groups.length) submitPick();
+        };
+        row.appendChild(chip);
+      });
+    });
+
+    document.getElementById(containerId + '-clear').onclick = function () {
+      current = [];
+      refreshCurrent();
+      setFeedback("");
+    };
+    document.getElementById(containerId + '-hint').onclick = function () {
+      useHint(chId);
+      var idx = found.indexOf(false);
+      if (idx === -1) return;
+      found[idx] = true; foundCount++;
+      current = [];
+      draw();
+      if (foundCount === target.length && onAllFound) onAllFound(target.length, true);
+    };
+  }
+
+  function refreshCurrent() {
+    var el = document.getElementById(containerId + '-currenttext');
+    if (el) el.textContent = current.length ? current.join(' + ') : 'tap above';
+  }
+  function setFeedback(html, cls) {
+    var fb = document.getElementById(containerId + '-fb');
+    if (!fb) return;
+    if (!html) { fb.className = 'feedback'; fb.textContent = ''; return; }
+    fb.className = 'feedback show' + (cls ? ' ' + cls : '');
+    fb.innerHTML = html;
+  }
+
+  function submitPick() {
+    var matchIdx = -1;
+    for (var i = 0; i < target.length; i++) {
+      if (target[i].length === current.length && target[i].every(function (v, idx) { return v === current[idx]; })) { matchIdx = i; break; }
+    }
+    if (matchIdx === -1) {
+      setFeedback("Hmm, that combination isn't valid — try again.", "no");
+      current = [];
+      refreshCurrent();
+      return;
+    }
+    if (found[matchIdx]) {
+      setFeedback("Already found " + cellLabel(current) + " — try a different combo.", "no");
+      current = [];
+      refreshCurrent();
+      return;
+    }
+    found[matchIdx] = true;
+    foundCount++;
+    var justFinished = foundCount === target.length;
+    current = [];
+    draw();
+    setFeedback("✅ Found it!", "ok");
+    if (justFinished && onAllFound) onAllFound(target.length);
+  }
+
+  draw();
+  return target.length;
+}
+
+/* ---------- Shrinking-pool widget (tap into ordered slots, each pick removes from pool) ---------- */
+function shrinkingPoolWidget(containerId, pool, slots, onComplete) {
+  var remaining = pool.slice();
+  var assigned = [];
+
+  function draw() {
+    var html = '<p class="lb-instruction">Tap officers into each role, in order:</p>';
+    html += '<div class="item-row" id="' + containerId + '-pool"></div>';
+    html += '<div class="callout engineer" id="' + containerId + '-slots" style="margin-top:12px"></div>';
+    if (assigned.length > 0) html += '<button class="btn small" id="' + containerId + '-reset" style="margin-top:10px">Start Over</button>';
+    document.getElementById(containerId).innerHTML = html;
+
+    var poolRow = document.getElementById(containerId + '-pool');
+    remaining.forEach(function (it) {
+      var chip = document.createElement('div');
+      chip.className = 'item-chip';
+      chip.textContent = it;
+      chip.onclick = function () {
+        if (assigned.length >= slots.length) return;
+        assigned.push({ slot: slots[assigned.length], item: it });
+        remaining = remaining.filter(function (x) { return x !== it; });
+        draw();
+        if (assigned.length === slots.length && onComplete) onComplete(assigned.map(function (a) { return a.item; }), pool.length);
+      };
+      poolRow.appendChild(chip);
+    });
+
+    var slotsEl = document.getElementById(containerId + '-slots');
+    var s = "";
+    slots.forEach(function (label, i) {
+      var a = assigned[i];
+      s += label + ": <strong>" + (a ? a.item : "—") + "</strong>" + (i < slots.length - 1 ? " &nbsp;→&nbsp; " : "");
+    });
+    slotsEl.innerHTML = s;
+
+    var resetBtn = document.getElementById(containerId + '-reset');
+    if (resetBtn) resetBtn.onclick = function () { remaining = pool.slice(); assigned = []; draw(); };
+  }
+  draw();
+}
+
+/* ---------- Team builder (tap into an unordered team bag, sorted display) ---------- */
+function teamBuilderWidget(containerId, pool, teamSize, onComplete) {
+  var remaining = pool.slice();
+  var team = [];
+
+  function draw() {
+    var html = '<p class="lb-instruction">Tap ' + teamSize + ' officers to form the team (order doesn\'t matter):</p>';
+    html += '<div class="item-row" id="' + containerId + '-pool"></div>';
+    html += '<div class="callout engineer" id="' + containerId + '-team" style="margin-top:12px"></div>';
+    if (team.length > 0) html += '<button class="btn small" id="' + containerId + '-reset" style="margin-top:10px">Start Over</button>';
+    document.getElementById(containerId).innerHTML = html;
+
+    var poolRow = document.getElementById(containerId + '-pool');
+    remaining.forEach(function (it) {
+      var chip = document.createElement('div');
+      chip.className = 'item-chip';
+      chip.textContent = it;
+      chip.onclick = function () {
+        if (team.length >= teamSize) return;
+        team.push(it);
+        remaining = remaining.filter(function (x) { return x !== it; });
+        draw();
+        if (team.length === teamSize && onComplete) onComplete(team.slice().sort(), pool.length);
+      };
+      poolRow.appendChild(chip);
+    });
+
+    var teamEl = document.getElementById(containerId + '-team');
+    teamEl.innerHTML = team.length ? ("Team so far: <strong>{" + team.slice().sort().join(", ") + "}</strong>") : "Tap officers above to build the team.";
+
+    var resetBtn = document.getElementById(containerId + '-reset');
+    if (resetBtn) resetBtn.onclick = function () { remaining = pool.slice(); team = []; draw(); };
+  }
+  draw();
+}
+
+/* ---------- Guided explanation widget (tap-to-build sentence, with a "type my own" fallback) ---------- */
+/* tokens: array of { t:'text', v:'...' } | { t:'blank', options:['phrase1','phrase2','phrase3'] } */
+function guidedExplanationWidget(containerId, chId, stageIdx, tokens) {
+  var blankTokens = tokens.filter(function (t) { return t.t === "blank"; });
+  var filled = new Array(blankTokens.length).fill(null);
+  var current = 0;
+  var freeMode = false;
+
+  function sentenceHtml() {
+    var s = "", bi = 0;
+    tokens.forEach(function (tok) {
+      if (tok.t === "text") { s += escapeHtml(tok.v); }
+      else {
+        var val = filled[bi];
+        s += val ? ('<strong style="color:var(--teal)">' + escapeHtml(val) + '</strong>') : '<span style="color:var(--ink-soft)">_____</span>';
+        bi++;
+      }
+    });
+    return s;
+  }
+
+  function drawGuided() {
+    var html = '<div class="callout engineer" style="font-size:14.5px;line-height:1.7">' + sentenceHtml() + '</div>';
+    if (current < blankTokens.length) {
+      html += '<p class="lb-instruction">Tap the phrase that finishes the sentence:</p>';
+      html += '<div class="item-row" id="' + containerId + '-opts"></div>';
+    } else {
+      html += '<div class="feedback show ok" style="margin-top:12px">✅ Nice explanation!</div>';
+      html += '<button class="btn primary small" id="' + containerId + '-done" style="margin-top:10px">Continue →</button>';
+    }
+    html += '<div style="margin-top:12px">';
+    if (blankTokens.length > 0 && current > 0) html += '<button class="btn small" id="' + containerId + '-reset" style="margin-right:8px">Start Over</button>';
+    html += '<button class="btn small amber" id="' + containerId + '-free">✏️ I\'d rather type my own</button>';
+    html += '</div>';
+    document.getElementById(containerId).innerHTML = html;
+
+    if (current < blankTokens.length) {
+      var row = document.getElementById(containerId + "-opts");
+      blankTokens[current].options.forEach(function (opt) {
+        var chip = document.createElement("div");
+        chip.className = "item-chip";
+        chip.textContent = opt;
+        chip.onclick = function () {
+          filled[current] = opt;
+          current++;
+          drawGuided();
+        };
+        row.appendChild(chip);
+      });
+    } else {
+      document.getElementById(containerId + "-done").onclick = function () { markStageDone(chId, stageIdx); render(); };
+    }
+    var resetBtn = document.getElementById(containerId + "-reset");
+    if (resetBtn) resetBtn.onclick = function () { filled = new Array(blankTokens.length).fill(null); current = 0; drawGuided(); };
+    document.getElementById(containerId + "-free").onclick = function () { freeMode = true; drawFree(); };
+  }
+
+  function drawFree() {
+    var html = '<textarea class="note" id="' + containerId + '-note" placeholder="Type your explanation..."></textarea>';
+    html += '<div style="margin-top:10px">';
+    html += '<button class="btn primary small" id="' + containerId + '-donefree" style="margin-right:8px">I\'ve explained it →</button>';
+    html += '<button class="btn small" id="' + containerId + '-back">← Back to tap-to-build</button>';
+    html += '</div>';
+    document.getElementById(containerId).innerHTML = html;
+    document.getElementById(containerId + "-donefree").onclick = function () { markStageDone(chId, stageIdx); render(); };
+    document.getElementById(containerId + "-back").onclick = function () { freeMode = false; drawGuided(); };
+  }
+
+  drawGuided();
+}
+
+/* ---------- Generic answer-check widget ---------- */
+function answerCheckWidget(containerId, correctValue, onCorrect) {
+  var html = '<div class="answer-row"><input type="number" id="' + containerId + '-input" placeholder="Your count" />';
+  html += '<button class="btn primary small" id="' + containerId + '-check">Check</button></div>';
+  html += '<div class="feedback" id="' + containerId + '-fb"></div>';
+  document.getElementById(containerId).innerHTML = html;
+  document.getElementById(containerId + "-check").onclick = function () {
+    var v = parseInt(document.getElementById(containerId + "-input").value, 10);
+    var fb = document.getElementById(containerId + "-fb");
+    fb.className = "feedback show";
+    if (v === correctValue) {
+      fb.classList.add("ok");
+      fb.textContent = "✅ Correct — " + correctValue + ". Nice counting.";
+      if (onCorrect) onCorrect();
+    } else {
+      fb.classList.add("no");
+      fb.textContent = "Not quite. Try recounting systematically — nothing skipped, nothing doubled.";
+    }
+  };
+}
+
+/* =========================================================
+   CHAPTER 1 — What Does Count Really Mean?
+   ========================================================= */
+
+var CH1_STAGES = [
+/* Stage 0: Visual Model */
+function (chId, root) {
+  var items = ["🔴","🟢","🔵"];
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🛟 Three Lifebelts on Deck</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The bosun has laid out <strong>3 lifebelts</strong> on the boat deck before a drill.</p>';
+  html += '<div class="item-row" id="ch1-s0-items"></div>';
+  html += '<p style="margin-top:12px">Tap <strong>one</strong> lifebelt — the one you\'d grab first for the drill.</p>';
+  html += '<div class="callout" id="ch1-s0-msg">Pick a lifebelt above.</div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var row = document.getElementById("ch1-s0-items");
+  items.forEach(function (it, i) {
+    var chip = document.createElement("div");
+    chip.className = "item-chip"; chip.textContent = it;
+    chip.onclick = function () {
+      Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("picked"); });
+      chip.classList.add("picked");
+      var msg = document.getElementById("ch1-s0-msg");
+      msg.innerHTML = 'You could have picked <strong>any of the 3</strong> lifebelts — that\'s <strong>3 different choices</strong> for grabbing just 1. Hold that thought: it\'s the seed of everything in this sketchbook.';
+      markStageDone(chId, 0);
+      render();
+    };
+    row.appendChild(chip);
+  });
+},
+
+/* Stage 1: Mental Strategy — Lab 2, Choose vs Arrange vs Use */
+function (chId, root) {
+  var items = ["A","B","C"];
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">🚩 Same 3 Flags, Three Different Jobs</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The bridge has three signal flags: <strong>A, B, C</strong>. Same three flags — but the job changes what "counting" means.</p>';
+  html += '<div class="callout engineer"><strong>Job 1 — CHOOSE:</strong> pick 2 flags to send up together. Order doesn\'t matter (AB is the same bundle as BA).</div>';
+  html += '<div id="ch1-lb-combo" class="list-builder"></div>';
+  html += '<div class="callout engineer" style="margin-top:14px"><strong>Job 2 — ARRANGE:</strong> hoist 2 flags one after another. Order matters now (AB and BA are different messages!).</div>';
+  html += '<div id="ch1-lb-perm" class="list-builder"></div>';
+  html += '<div class="callout engineer" style="margin-top:14px"><strong>Job 3 — CODE:</strong> build a 2-flag signal code. You can repeat a flag (AA is allowed).</div>';
+  html += '<div id="ch1-lb-seq" class="list-builder"></div>';
+  html += '<div class="callout" id="ch1-s1-summary" style="margin-top:14px;display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var counts = { combo: 0, perm: 0, seq: 0 };
+  function checkAllDone() {
+    if (counts.combo && counts.perm && counts.seq) {
+      var s = document.getElementById("ch1-s1-summary");
+      s.style.display = "block";
+      s.innerHTML = '📌 <strong>CHOOSE (' + counts.combo + ') ≠ ARRANGE (' + counts.perm + ') ≠ CODE (' + counts.seq + ')</strong>. Same 3 flags, three different questions, three different answers. This is the single most important idea in the whole sketchbook.';
+      markStageDone(chId, 1);
+    }
+  }
+
+  listBuilderWidget("ch1-lb-combo", items, 2, "combo", chId, function (n) { counts.combo = n; checkAllDone(); });
+  listBuilderWidget("ch1-lb-perm", items, 2, "perm", chId, function (n) { counts.perm = n; checkAllDone(); });
+  listBuilderWidget("ch1-lb-seq", items, 2, "seq", chId, function (n) { counts.seq = n; checkAllDone(); });
+},
+
+/* Stage 2: General Rule */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Fill the Mini-Table</div>';
+  html += '<div class="concept-body">';
+  html += '<p>With <strong>3 flags</strong>, you found: CHOOSE-2 = 3, ARRANGE-2 = 6, CODE-2 = 9.</p>';
+  html += '<p>Now predict for <strong>4 flags (A, B, C, D)</strong> before you count — then check.</p>';
+  html += '<div class="callout">Predict ARRANGE-2 out of 4 flags. How many ordered pairs?</div>';
+  html += '<div id="ch1-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var correct = kPermutations(["A","B","C","D"], 2).length;
+  answerCheckWidget("ch1-s2-check", correct, function () { markStageDone(chId, 2); });
+},
+
+/* Stage 3: Why It Works */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 The Doubling Proof</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Notice: ARRANGE-2 was always <strong>exactly double</strong> CHOOSE-2 (6 = 2 × 3, and for 4 flags it\'s ' + kPermutations(["A","B","C","D"],2).length + ' = 2 × ' + kCombinations(["A","B","C","D"],2).length + ').</p>';
+  html += '<p>Build the explanation below by tapping the phrase that fits best:</p>';
+  html += '<div id="ch1-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch1-s3-guided", chId, 3, [
+    { t: "text", v: "Because every pair I CHOOSE can be hoisted in " },
+    { t: "blank", options: ["2", "exactly 2", "two"] },
+    { t: "text", v: " different orders, ARRANGE always ends up " },
+    { t: "blank", options: ["double", "twice as big as", "2 times"] },
+    { t: "text", v: " CHOOSE." }
+  ]);
+},
+
+/* Stage 4: Competition Challenge */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The RMS <em>Britannic</em> carries 4 signal flags: A, B, C, D. The bridge officer sends a message using exactly <strong>2 different flags</strong>, and the order they\'re hoisted matters. How many different two-flag messages are possible?</p>';
+  html += '<div id="ch1-s4-check1"></div>';
+  html += '<div class="callout" id="ch1-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Flag D is reserved for emergencies — it can never be hoisted <strong>first</strong>. Now how many valid two-flag messages are possible?</div>';
+  html += '<div id="ch1-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var flags = ["A","B","C","D"];
+  var base = kPermutations(flags, 2).length;
+  answerCheckWidget("ch1-s4-check1", base, function () {
+    document.getElementById("ch1-s4-stretch").style.display = "block";
+    document.getElementById("ch1-s4-check2").style.display = "block";
+    var valid = kPermutations(flags, 2).filter(function (p) { return p[0] !== "D"; }).length;
+    answerCheckWidget("ch1-s4-check2", valid, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 2 — Systematic Counting
+   ========================================================= */
+
+var CH2_STAGES = [
+function (chId, root) {
+  var officers = ["A","B","C","D"];
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🧱 Four Officers, Two Watches</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Four deck officers — A, B, C, D — need pairing for the night watch: a <strong>first watch</strong> officer and a <strong>second watch</strong> officer. Order matters (first watch ≠ second watch).</p>';
+  html += '<div class="item-row" id="ch2-s0-items"></div>';
+  html += '<p style="margin-top:12px">If <strong>A</strong> takes first watch, how many officers could take second watch?</p>';
+  html += '<div id="ch2-s0-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var row = document.getElementById("ch2-s0-items");
+  officers.forEach(function (o) {
+    var chip = document.createElement("div"); chip.className = "item-chip"; chip.textContent = o;
+    row.appendChild(chip);
+  });
+  answerCheckWidget("ch2-s0-check", 3, function () { markStageDone(chId, 0); });
+},
+
+function (chId, root) {
+  var officers = ["A","B","C","D"];
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">✂️ The Crossing-Out Method</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Don\'t count randomly — count <strong>row by row</strong>. Start with A first-watch, tap every second-watch partner, THEN move to B, and so on. Build each pairing below yourself and watch the pattern.</p>';
+  html += '<div id="ch2-lb-perm" class="list-builder"></div>';
+  html += '<div class="callout" id="ch2-s1-summary" style="display:none;margin-top:12px"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  listBuilderWidget("ch2-lb-perm", officers, 2, "perm", chId, function (n) {
+    var s = document.getElementById("ch2-s1-summary");
+    s.style.display = "block";
+    s.innerHTML = '📌 Going row-by-row (fix the first-watch officer, list all partners, move on) never skips a pair and never repeats one. Total: <strong>' + n + '</strong> watch pairings.';
+    markStageDone(chId, 1);
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Spot the Pattern</div>';
+  html += '<div class="concept-body">';
+  html += '<p>4 officers, each with 3 possible partners: 4 × 3 = 12. Now predict for <strong>5 officers</strong> (A, B, C, D, E) pairing first &amp; second watch.</p>';
+  html += '<div id="ch2-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var correct = kPermutations(["A","B","C","D","E"], 2).length;
+  answerCheckWidget("ch2-s2-check", correct, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Why Row-By-Row Never Misses</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Every pairing has exactly <strong>one</strong> first-watch officer. So if you visit every officer\'s row exactly once, and in each row you list every remaining officer exactly once, you have visited every pairing exactly once too — no more, no less.</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch2-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch2-s3-guided", chId, 3, [
+    { t: "text", v: "Going row by row " },
+    { t: "blank", options: ["never skips a pair", "covers every starting officer once", "never repeats a pairing"] },
+    { t: "text", v: ", because each pairing has " },
+    { t: "blank", options: ["exactly one", "just one", "only one"] },
+    { t: "text", v: " first-watch officer." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>5 officers (A, B, C, D, E) are available for first and second watch — no repeats, order matters. How many possible watch pairings are there?</p>';
+  html += '<div id="ch2-s4-check1"></div>';
+  html += '<div class="callout" id="ch2-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Officer E has just joined and hasn\'t been signed off for first watch yet — E can only take <strong>second</strong> watch. How many valid pairings now?</div>';
+  html += '<div id="ch2-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var officers = ["A","B","C","D","E"];
+  var base = kPermutations(officers, 2).length;
+  answerCheckWidget("ch2-s4-check1", base, function () {
+    document.getElementById("ch2-s4-stretch").style.display = "block";
+    document.getElementById("ch2-s4-check2").style.display = "block";
+    var valid = kPermutations(officers, 2).filter(function (p) { return p[0] !== "E"; }).length;
+    answerCheckWidget("ch2-s4-check2", valid, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 3 — Tree Diagrams
+   ========================================================= */
+
+var CH3_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🌳 Engine Room Dial Settings</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The engine has a <strong>pressure dial</strong> (Low or High) and a <strong>valve dial</strong> (A, B, or C). Every full setting needs BOTH dials chosen.</p>';
+  html += '<p style="margin-top:12px">Tap one pressure option AND one valve option to build a real setting:</p>';
+  html += '<p style="margin-top:12px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">⚙️ Pressure Dial</p>';
+  html += '<div class="item-row" id="ch3-s0-pressure"></div>';
+  html += '<p style="margin-top:14px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">🔧 Valve Dial</p>';
+  html += '<div class="item-row" id="ch3-s0-valve"></div>';
+  html += '<div class="callout engineer" id="ch3-s0-preview" style="margin-top:14px">Tap one option from each dial above to build a setting.</div>';
+  html += '<p style="margin-top:14px">Guess: how many complete dial <strong>settings</strong> (one pressure + one valve) exist in total?</p>';
+  html += '<div id="ch3-s0-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var pressures = ["Low", "High"];
+  var valves = ["A", "B", "C"];
+  var pickedPressure = null, pickedValve = null;
+
+  function buildRow(containerId, options, onPick) {
+    var row = document.getElementById(containerId);
+    options.forEach(function (opt) {
+      var chip = document.createElement("div");
+      chip.className = "item-chip";
+      chip.textContent = opt;
+      chip.onclick = function () {
+        Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("picked"); });
+        chip.classList.add("picked");
+        onPick(opt);
+      };
+      row.appendChild(chip);
+    });
+  }
+
+  function updatePreview() {
+    var el = document.getElementById("ch3-s0-preview");
+    if (pickedPressure && pickedValve) {
+      el.innerHTML = '⚙️ <strong>Current setting: ' + pickedPressure + ' pressure + Valve ' + pickedValve + '</strong> — that\'s ONE of the possible settings. Tap other chips to build a different one.';
+    } else {
+      el.textContent = "Tap one option from each dial above to build a setting.";
+    }
+  }
+
+  buildRow("ch3-s0-pressure", pressures, function (v) { pickedPressure = v; updatePreview(); });
+  buildRow("ch3-s0-valve", valves, function (v) { pickedValve = v; updatePreview(); });
+
+  answerCheckWidget("ch3-s0-check", 6, function () { markStageDone(chId, 0); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">🌳 Build the Tree</div>';
+  html += '<div class="concept-body">';
+  html += '<p>A tree diagram makes every path visible. Trunk → pressure branch → valve leaf. Each full path from trunk to a leaf is <strong>one</strong> complete setting.</p>';
+  html += '<div class="svg-box" id="ch3-tree"></div>';
+  html += '<p style="margin-top:10px">Count the <strong>leaves</strong> (end points) in the tree above. That\'s your total number of settings.</p>';
+  html += '<div id="ch3-s1-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var pressures = ["Low", "High"];
+  var byParent = { Low: ["Valve A","Valve B","Valve C"], High: ["Valve A","Valve B","Valve C"] };
+  document.getElementById("ch3-tree").innerHTML = buildTreeSVG("ENGINE", pressures, byParent, 460);
+  var total = pressures.reduce(function (sum, p) { return sum + byParent[p].length; }, 0);
+  answerCheckWidget("ch3-s1-check", total, function () { markStageDone(chId, 1); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Predict a Bigger Tree</div>';
+  html += '<div class="concept-body">';
+  html += '<p>2 pressure settings × 3 valve settings = 6. Now the engineers add a <strong>third dial</strong>: fuel mix (Coal-heavy or Coal-light) — 2 options. Predict the total number of full settings (pressure × valve × fuel) WITHOUT drawing the whole tree.</p>';
+  html += '<div id="ch3-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch3-s2-check", 2*3*2, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Every Leaf Is Exactly One Outcome</div>';
+  html += '<div class="concept-body">';
+  html += '<p>A tree works because <strong>every path from trunk to leaf uses exactly one choice from each dial</strong> — and every possible combination of choices corresponds to exactly one path. No path is skipped, none is drawn twice.</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch3-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch3-s3-guided", chId, 3, [
+    { t: "text", v: "A tree works because every path from trunk to leaf uses " },
+    { t: "blank", options: ["exactly one choice from each dial", "one option per level", "a single choice at every branch"] },
+    { t: "text", v: ", so counting the leaves is " },
+    { t: "blank", options: ["the same as", "equal to", "identical to"] },
+    { t: "text", v: " multiplying the branches." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>A ship\'s workshop stocks 3 types of rivets and 4 types of hull plates. A repair job needs exactly one rivet type and one plate type. How many different repair combinations are possible?</p>';
+  html += '<div id="ch3-s4-check1"></div>';
+  html += '<div class="callout" id="ch3-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> One particular rivet type is too soft for one particular hull plate — that one pairing is unsafe and forbidden. How many safe repair combinations now?</div>';
+  html += '<div id="ch3-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 3 * 4;
+  answerCheckWidget("ch3-s4-check1", base, function () {
+    document.getElementById("ch3-s4-stretch").style.display = "block";
+    document.getElementById("ch3-s4-check2").style.display = "block";
+    answerCheckWidget("ch3-s4-check2", base - 1, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 4 — Tables & Grids
+   ========================================================= */
+
+var CH4_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">📋 The Cabin Grid</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Cabins are named by <strong>deck number</strong> (1, 2, 3) and <strong>class letter</strong> (A, B, C). A cabin code like "2B" means deck 2, class B.</p>';
+  html += '<p style="margin-top:12px">Tap one deck AND one class to build a real cabin code:</p>';
+  html += '<p style="margin-top:12px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">🚢 Deck</p>';
+  html += '<div class="item-row" id="ch4-s0-deck"></div>';
+  html += '<p style="margin-top:14px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">🛏️ Class</p>';
+  html += '<div class="item-row" id="ch4-s0-class"></div>';
+  html += '<div class="callout engineer" id="ch4-s0-preview" style="margin-top:14px">Tap one deck and one class above to build a cabin code.</div>';
+  html += '<p style="margin-top:14px">How many decks are there? How many class letters? Guess: how many total cabin codes should exist, if every deck has every class?</p>';
+  html += '<div id="ch4-s0-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var decks = ["1", "2", "3"];
+  var classes = ["A", "B", "C"];
+  var pickedDeck = null, pickedClass = null;
+
+  function buildRow(containerId, options, onPick) {
+    var row = document.getElementById(containerId);
+    options.forEach(function (opt) {
+      var chip = document.createElement("div");
+      chip.className = "item-chip";
+      chip.textContent = opt;
+      chip.onclick = function () {
+        Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("picked"); });
+        chip.classList.add("picked");
+        onPick(opt);
+      };
+      row.appendChild(chip);
+    });
+  }
+
+  function updatePreview() {
+    var el = document.getElementById("ch4-s0-preview");
+    if (pickedDeck && pickedClass) {
+      el.innerHTML = '📋 <strong>Cabin code: ' + pickedDeck + pickedClass + '</strong> — that\'s ONE of the possible cabins. Tap other chips to build a different code.';
+    } else {
+      el.textContent = "Tap one deck and one class above to build a cabin code.";
+    }
+  }
+
+  buildRow("ch4-s0-deck", decks, function (v) { pickedDeck = v; updatePreview(); });
+  buildRow("ch4-s0-class", classes, function (v) { pickedClass = v; updatePreview(); });
+
+  answerCheckWidget("ch4-s0-check", 9, function () { markStageDone(chId, 0); });
+},
+
+function (chId, root) {
+  var decks = [1,2,3], classes = ["A","B","C"];
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">📋 Fill the Grid</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Tap each empty cell to reveal its cabin code. Fill the whole grid.</p>';
+  html += '<table class="grid-table" id="ch4-grid"><thead><tr><th class="corner">Deck \\ Class</th>';
+  classes.forEach(function (c) { html += '<th>' + c + '</th>'; });
+  html += '</tr></thead><tbody>';
+  decks.forEach(function (d) {
+    html += '<tr><th>' + d + '</th>';
+    classes.forEach(function (c) {
+      html += '<td class="gcell" data-code="' + d + c + '"></td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  html += '<div class="lb-progress" id="ch4-s1-progress" style="margin-top:8px">Filled: 0 / 9</div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var cells = root.querySelectorAll(".gcell");
+  var filled = 0;
+  cells.forEach(function (cell) {
+    cell.onclick = function () {
+      if (cell.classList.contains("filled")) return;
+      cell.textContent = cell.getAttribute("data-code");
+      cell.classList.add("filled");
+      filled++;
+      document.getElementById("ch4-s1-progress").textContent = "Filled: " + filled + " / 9";
+      if (filled === 9) markStageDone(chId, 1);
+    };
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Rows × Columns</div>';
+  html += '<div class="concept-body">';
+  html += '<p>3 decks × 3 classes = 9 cabin codes — the grid has 3 rows and 3 columns, 9 cells total. Predict: if the ship adds a 4th deck AND a 4th class letter (D), how many total cabin codes?</p>';
+  html += '<div id="ch4-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch4-s2-check", 16, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 The Grid IS an Area Model</div>';
+  html += '<div class="concept-body">';
+  html += '<p>You\'ve used an area model like this before in multiplication — rows × columns = total squares. A counting grid works the exact same way: every row/column crossing is one unique combination, and there\'s no way to land on the same crossing twice or skip one.</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch4-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch4-s3-guided", chId, 3, [
+    { t: "text", v: "Rows × columns always equals the number of cells because every crossing is " },
+    { t: "blank", options: ["one unique combination", "a single unique pairing", "exactly one combo"] },
+    { t: "text", v: ", and you can't " },
+    { t: "blank", options: ["land on the same crossing twice", "repeat a crossing", "skip a crossing"] },
+    { t: "text", v: "." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>A liner has 5 decks and 4 classes, and every deck offers every class of cabin. How many cabin codes are possible?</p>';
+  html += '<div id="ch4-s4-check1"></div>';
+  html += '<div class="callout" id="ch4-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Deck 1 is reserved for crew only — it cannot be used for Class C or Class D cabins. How many valid passenger cabin codes now?</div>';
+  html += '<div id="ch4-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 5 * 4;
+  answerCheckWidget("ch4-s4-check1", base, function () {
+    document.getElementById("ch4-s4-stretch").style.display = "block";
+    document.getElementById("ch4-s4-check2").style.display = "block";
+    answerCheckWidget("ch4-s4-check2", base - 2, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 5 — Addition Principle (OR)
+   ========================================================= */
+
+var CH5_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🔧 One Tool From the Workshop</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The workshop has <strong>3 wrench types</strong> and <strong>2 spanner types</strong>. You need to grab <strong>ONE</strong> tool — any wrench, OR any spanner — for a quick job.</p>';
+  html += '<p style="margin-top:12px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">🔩 Wrenches</p>';
+  html += '<div class="item-row" id="ch5-s0-wrench"></div>';
+  html += '<p style="margin-top:14px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">🔗 Spanners</p>';
+  html += '<div class="item-row" id="ch5-s0-spanner"></div>';
+  html += '<div class="callout engineer" id="ch5-s0-preview" style="margin-top:14px">Tap any ONE tool above — wrench or spanner.</div>';
+  html += '<p style="margin-top:14px">How many different single tools could you have grabbed, in total?</p>';
+  html += '<div id="ch5-s0-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var wrenches = ["W-A", "W-B", "W-C"];
+  var spanners = ["S-X", "S-Y"];
+  function buildRow(containerId, options, groupName) {
+    var row = document.getElementById(containerId);
+    options.forEach(function (opt) {
+      var chip = document.createElement("div");
+      chip.className = "item-chip";
+      chip.textContent = opt;
+      chip.onclick = function () {
+        document.querySelectorAll("#" + "ch5-s0-wrench .item-chip, #ch5-s0-spanner .item-chip").forEach(function (c) { c.classList.remove("picked"); });
+        chip.classList.add("picked");
+        document.getElementById("ch5-s0-preview").innerHTML = '🔧 <strong>You grabbed: ' + opt + '</strong> (a ' + groupName + ') — just ONE tool, from either pile.';
+      };
+      row.appendChild(chip);
+    });
+  }
+  buildRow("ch5-s0-wrench", wrenches, "wrench");
+  buildRow("ch5-s0-spanner", spanners, "spanner");
+
+  answerCheckWidget("ch5-s0-check", 5, function () { markStageDone(chId, 0); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">➕ &times; &nbsp; Operation Detective</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Some jobs need ONE thing from EITHER pile (<strong>OR</strong> → add the group sizes). Some jobs need ONE thing from EACH pile (<strong>AND</strong> → multiply the group sizes, like Chapter 3\'s dial tree). Read each scenario and tap the matching operation.</p>';
+  html += '<div id="ch5-detective"></div>';
+  html += '<div class="lb-progress" id="ch5-s1-progress" style="margin-top:10px">Solved: 0 / 5</div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var scenarios = [
+    { text: "Grab a rivet OR a bolt for a quick patch.", op: "+" },
+    { text: "Pick a hull plate AND pick a rivet type to join it.", op: "×" },
+    { text: "Choose a lifebelt colour OR a lifebelt size (only need one fact).", op: "+" },
+    { text: "Set the pressure dial AND set the valve dial for one full setting.", op: "×" },
+    { text: "Send a message using a flag signal OR a lantern signal (just one).", op: "+" }
+  ];
+  var solved = new Array(scenarios.length).fill(false);
+  var solvedCount = 0;
+  var box = document.getElementById("ch5-detective");
+  scenarios.forEach(function (sc, i) {
+    var card = document.createElement("div");
+    card.className = "callout";
+    card.style.marginTop = "10px";
+    card.innerHTML = '<div>' + sc.text + '</div><div style="margin-top:8px" id="ch5-det-btns-' + i + '"></div><div id="ch5-det-fb-' + i + '" style="margin-top:6px;font-size:12.5px;font-weight:600"></div>';
+    box.appendChild(card);
+    ["+", "×"].forEach(function (opChoice) {
+      var btn = document.createElement("button");
+      btn.className = "btn small";
+      btn.style.marginRight = "8px";
+      btn.textContent = opChoice;
+      btn.onclick = function () {
+        var fb = document.getElementById("ch5-det-fb-" + i);
+        if (solved[i]) return;
+        if (opChoice === sc.op) {
+          fb.style.color = "#1e5c40";
+          fb.textContent = "✅ Correct — " + (sc.op === "+" ? "separate piles, add them." : "one from each, multiply them.");
+          solved[i] = true;
+          solvedCount++;
+          document.getElementById("ch5-s1-progress").textContent = "Solved: " + solvedCount + " / " + scenarios.length;
+          if (solvedCount === scenarios.length) markStageDone(chId, 1);
+        } else {
+          fb.style.color = "#C0392B";
+          fb.textContent = "Not quite — think about whether you need ONE item total, or ONE from each group.";
+        }
+      };
+      document.getElementById("ch5-det-btns-" + i).appendChild(btn);
+    });
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Add the Group Sizes</div>';
+  html += '<div class="concept-body">';
+  html += '<p>3 wrenches + 2 spanners = 5 single-tool choices. Now predict: the workshop adds a 3rd pile — <strong>4 screwdriver types</strong> — and you still only need ONE tool from any pile. How many single-tool choices now?</p>';
+  html += '<div id="ch5-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch5-s2-check", 3 + 2 + 4, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Why We Add, Not Multiply</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Addition works here because you\'re only grabbing from <strong>one pile</strong> — the piles don\'t overlap, so every tool gets counted exactly once when you just add the pile sizes.</p>';
+  html += '<p style="margin-top:8px">But what if one tool were secretly in <strong>both</strong> piles — a hybrid wrench-spanner? Then adding the piles would count that ONE physical tool <strong>twice</strong>, so you\'d need to subtract the overlap.</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch5-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch5-s3-guided", chId, 3, [
+    { t: "text", v: "Adding the pile sizes only works when the piles " },
+    { t: "blank", options: ["don't share any items", "have no overlap", "are completely separate"] },
+    { t: "text", v: ", because if one tool were in both piles, it would get " },
+    { t: "blank", options: ["counted twice", "double-counted", "counted more than once"] },
+    { t: "text", v: "." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The stores hold 4 wrench types and 3 spanner types. A repair needs exactly ONE tool — any wrench, or any spanner. How many choices are there?</p>';
+  html += '<div id="ch5-s4-check1"></div>';
+  html += '<div class="callout" id="ch5-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> One of the "wrench" types is actually a hybrid tool — it\'s the exact same physical tool as one of the "spanner" types, just listed in both catalogues. How many <em>distinct physical tools</em> are really available?</div>';
+  html += '<div id="ch5-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 4 + 3;
+  answerCheckWidget("ch5-s4-check1", base, function () {
+    document.getElementById("ch5-s4-stretch").style.display = "block";
+    document.getElementById("ch5-s4-check2").style.display = "block";
+    answerCheckWidget("ch5-s4-check2", base - 1, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 6 — Multiplication Principle (AND, formalized)
+   ========================================================= */
+
+var CH6_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">📡 The Wireless Room, Three Dials</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The wireless room has THREE independent dials: <strong>Frequency</strong> (Long or Short), <strong>Power</strong> (Low, Medium, or High), and <strong>Antenna</strong> (Fixed or Rotating). Every setup needs all three chosen.</p>';
+  html += '<p style="margin-top:12px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">📻 Frequency</p>';
+  html += '<div class="item-row" id="ch6-s0-freq"></div>';
+  html += '<p style="margin-top:14px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">⚡ Power</p>';
+  html += '<div class="item-row" id="ch6-s0-power"></div>';
+  html += '<p style="margin-top:14px;font-size:11px;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono);letter-spacing:0.06em">📶 Antenna</p>';
+  html += '<div class="item-row" id="ch6-s0-antenna"></div>';
+  html += '<div class="callout engineer" id="ch6-s0-preview" style="margin-top:14px">Tap one option from each dial to build a full setup.</div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var freq = ["Long", "Short"], power = ["Low", "Medium", "High"], antenna = ["Fixed", "Rotating"];
+  var picked = { freq: null, power: null, antenna: null };
+  function buildRow(containerId, options, key) {
+    var row = document.getElementById(containerId);
+    options.forEach(function (opt) {
+      var chip = document.createElement("div");
+      chip.className = "item-chip";
+      chip.textContent = opt;
+      chip.onclick = function () {
+        Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("picked"); });
+        chip.classList.add("picked");
+        picked[key] = opt;
+        var el = document.getElementById("ch6-s0-preview");
+        if (picked.freq && picked.power && picked.antenna) {
+          el.innerHTML = '📡 <strong>Setup: ' + picked.freq + ' + ' + picked.power + ' + ' + picked.antenna + '</strong> — ONE of many possible setups.';
+          markStageDone(chId, 0);
+        } else {
+          el.textContent = "Tap one option from each dial to build a full setup.";
+        }
+      };
+      row.appendChild(chip);
+    });
+  }
+  buildRow("ch6-s0-freq", freq, "freq");
+  buildRow("ch6-s0-power", power, "power");
+  buildRow("ch6-s0-antenna", antenna, "antenna");
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">✖️ Multiply Straight Across</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Drawing a full tree for 3 dials gets big fast. Instead: <strong>multiply the option counts straight across.</strong> Build every full setup below to see all of them appear.</p>';
+  html += '<div id="ch6-cross"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var groups = [
+    { label: "📻 Frequency", options: ["Long", "Short"] },
+    { label: "⚡ Power", options: ["Low", "Medium", "High"] }
+  ];
+  crossBuilderWidget("ch6-cross", groups, chId, function (n) { markStageDone(chId, 1); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Predict a 4th Dial</div>';
+  html += '<div class="concept-body">';
+  html += '<p>2 frequencies × 3 powers × 2 antennas = 12 full setups. Now the engineers add a 4th dial: <strong>Signal Type</strong> (Morse or Voice) — 2 options. Predict the new total WITHOUT listing every setup.</p>';
+  html += '<div id="ch6-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch6-s2-check", 2 * 3 * 2 * 2, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Extending the Tree Proof</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Remember Chapter 3: a tree\'s leaves = branches multiplied at each level. With 3 or 4 dials, the "tree" just grows more levels — each new dial multiplies EVERY existing setup by its own option count, because every existing setup can now branch into that many new versions.</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch6-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch6-s3-guided", chId, 3, [
+    { t: "text", v: "Adding a new independent dial " },
+    { t: "blank", options: ["multiplies", "scales up", "grows"] },
+    { t: "text", v: " the total, because every existing setup can now branch into " },
+    { t: "blank", options: ["that many new versions", "several new versions", "more versions"] },
+    { t: "text", v: "." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>A wireless setup needs a frequency (3 types), a power setting (4 settings), and an antenna (2 types). How many complete setups are possible?</p>';
+  html += '<div id="ch6-s4-check1"></div>';
+  html += '<div class="callout" id="ch6-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> The Rotating antenna only works when power is set to High (just 1 of the 4 power settings) — every other power setting only allows the Fixed antenna. How many valid setups now?</div>';
+  html += '<div id="ch6-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 3 * 4 * 2;
+  answerCheckWidget("ch6-s4-check1", base, function () {
+    document.getElementById("ch6-s4-stretch").style.display = "block";
+    document.getElementById("ch6-s4-check2").style.display = "block";
+    var valid = 3 * 3 * 1 + 3 * 1 * 2; // non-High powers: Fixed only; High power: both antennas
+    answerCheckWidget("ch6-s4-check2", valid, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 7 — Permutations (the shrinking pool)
+   ========================================================= */
+
+var CH7_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">⚓ Building One Bridge Watch Roster</div>';
+  html += '<div class="concept-body">';
+  html += '<p>5 officers (A, B, C, D, E) are available. Assign a <strong>Captain</strong>, a <strong>First Officer</strong>, and a <strong>Second Officer</strong> — three DIFFERENT people, one per role.</p>';
+  html += '<div id="ch7-shrink"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  shrinkingPoolWidget("ch7-shrink", ["A","B","C","D","E"], ["Captain","First Officer","Second Officer"], function (roster, poolSize) {
+    markStageDone(chId, 0);
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">🔢 Watch the Pool Shrink</div>';
+  html += '<div class="concept-body">';
+  html += '<p>For Captain, all 5 officers were available. Once Captain was picked, only 4 remained for First Officer. Once that was picked, only 3 remained for Second Officer.</p>';
+  html += '<div class="callout engineer">5 &nbsp;→&nbsp; 4 &nbsp;→&nbsp; 3 &nbsp;&middot;&nbsp; each role\'s pool is one smaller than the last, because the last pick is used up.</div>';
+  html += '<p style="margin-top:12px">Multiply those three pool sizes together: how many total rosters are possible?</p>';
+  html += '<div id="ch7-s1-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch7-s1-check", 5*4*3, function () { markStageDone(chId, 1); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Predict a 4th Role</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The bridge now wants a 4th role too — a <strong>Third Officer</strong> — still choosing from the same 5 officers, all different people. Predict the new total rosters.</p>';
+  html += '<div id="ch7-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch7-s2-check", 5*4*3*2, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Permutations = Shrinking Multiplication</div>';
+  html += '<div class="concept-body">';
+  html += '<p>This is really just Chapter 6\'s Multiplication Principle, EXCEPT each "dial" has one fewer option than the last, because a used officer can\'t be reused. Mathematicians write "multiply all the way down from n" as a <strong>factorial</strong>: 5! means 5×4×3×2×1.</p>';
+  html += '<p style="margin-top:8px">Arranging r roles out of n people is often written <strong>n! / (n−r)!</strong> — that\'s just a compact way to write "multiply the top r numbers of n! and stop."</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch7-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch7-s3-guided", chId, 3, [
+    { t: "text", v: "Each role's pool shrinks by exactly 1 because the officer chosen " },
+    { t: "blank", options: ["can't be reused", "is already used up", "is no longer available"] },
+    { t: "text", v: " for the next role." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>6 officers are available for Captain, First Officer, and Second Officer (3 distinct roles, all different people). How many possible rosters are there?</p>';
+  html += '<div id="ch7-s4-check1"></div>';
+  html += '<div class="callout" id="ch7-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Officer F is a new recruit and can\'t yet be Captain (still in training) — but F CAN take First or Second Officer. How many valid rosters now?</div>';
+  html += '<div id="ch7-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 6*5*4;
+  answerCheckWidget("ch7-s4-check1", base, function () {
+    document.getElementById("ch7-s4-stretch").style.display = "block";
+    document.getElementById("ch7-s4-check2").style.display = "block";
+    var valid = 5 * 5 * 4; // captain: exclude F (5 choices); remaining two roles from remaining 5 people (incl. F)
+    answerCheckWidget("ch7-s4-check2", valid, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 8 — Combinations (CHOOSE, formalized: why divide by r!)
+   ========================================================= */
+
+var CH8_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🔍 Building One Inspection Team</div>';
+  html += '<div class="concept-body">';
+  html += '<p>5 officers (A, B, C, D, E) are available. Choose <strong>3</strong> of them to form the boiler inspection team. Unlike a roster, there are no roles — it\'s just a TEAM. Order doesn\'t matter.</p>';
+  html += '<div id="ch8-team"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  teamBuilderWidget("ch8-team", ["A","B","C","D","E"], 3, function (team, poolSize) {
+    markStageDone(chId, 0);
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">➗ Why We Divide by 3!</div>';
+  html += '<div class="concept-body">';
+  html += '<p>If order DID matter (like Chapter 7\'s roster), choosing 3 from 5 officers gives <strong>5×4×3 = 60</strong> ordered results. But your team from Stage 1 doesn\'t care about order — {A,B,C} is the same team no matter which order you tapped them.</p>';
+  html += '<p style="margin-top:10px">Take just ONE team, say {A, B, C}. Build every possible ORDER of those exact 3 people below — every order is secretly the SAME team.</p>';
+  html += '<div id="ch8-orderings"></div>';
+  html += '<div class="callout" id="ch8-s1-summary" style="display:none;margin-top:12px"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  listBuilderWidget("ch8-orderings", ["A","B","C"], 3, "perm", chId, function (n) {
+    var s = document.getElementById("ch8-s1-summary");
+    s.style.display = "block";
+    var unordered = 60 / n;
+    s.innerHTML = '📌 The team {A,B,C} can be ordered <strong>' + n + '</strong> different ways — but they\'re all the SAME team. So every real team gets counted ' + n + ' times in the 60 ordered results. Unordered teams = 60 &divide; ' + n + ' = <strong>' + unordered + '</strong>.';
+    markStageDone(chId, 1);
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Predict a Different Team Size</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Choosing 3 from 5 officers gives 10 unordered teams (60 ordered ÷ 3! = 60 ÷ 6 = 10). Now predict: choosing <strong>2</strong> officers from a pool of <strong>6</strong> (unordered) — how many teams?</p>';
+  html += '<div class="callout engineer">Hint: ordered pairs from 6 = 6×5 = 30. Each pair can be ordered 2! = 2 ways.</div>';
+  html += '<div id="ch8-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch8-s2-check", 15, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 The Combination Formula</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Every unordered team of r people can be arranged in exactly <strong>r!</strong> different orders. So the ordered count (from Chapter 7\'s n!/(n−r)!) over-counts every team r! times. Dividing removes the duplicates:</p>';
+  html += '<div class="callout engineer">Number of teams = n! / (r! &times; (n&minus;r)!) &nbsp;&mdash;&nbsp; often written "n choose r" or nCr.</div>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch8-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch8-s3-guided", chId, 3, [
+    { t: "text", v: "Dividing by r! turns an ordered count into an unordered count because every team can be arranged in " },
+    { t: "blank", options: ["r! different orders", "several different orders", "many orders"] },
+    { t: "text", v: ", so the ordered count " },
+    { t: "blank", options: ["over-counts each team", "counts each team multiple times", "repeats each team"] },
+    { t: "text", v: "." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>7 officers (including F and G) are available. Choose 3 of them, unordered, to form an inspection team. How many possible teams?</p>';
+  html += '<div id="ch8-s4-check1"></div>';
+  html += '<div class="callout" id="ch8-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Officers F and G had a falling-out — they refuse to be on the same team together. How many valid teams now?</div>';
+  html += '<div id="ch8-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 35;
+  answerCheckWidget("ch8-s4-check1", base, function () {
+    document.getElementById("ch8-s4-stretch").style.display = "block";
+    document.getElementById("ch8-s4-check2").style.display = "block";
+    answerCheckWidget("ch8-s4-check2", base - 5, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 9 — Restrictions (fix the restricted slot first)
+   ========================================================= */
+
+var CH9_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🚫 The Cracked Funnel</div>';
+  html += '<div class="concept-body">';
+  html += '<p>4 funnels need arranging in a row: the <strong>Old Funnel</strong> (cracked) and Funnels B, C, D. Safety rule: the <strong>Old Funnel cannot go in Position 1</strong> (the front). Fill Position 1 first, from only the allowed funnels — then fill the rest.</p>';
+  html += '<div id="ch9-restricted-slot"></div>';
+  html += '<div id="ch9-remaining-slots" style="display:none;margin-top:14px"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var allFunnels = ["Old Funnel", "Funnel B", "Funnel C", "Funnel D"];
+  var restrictedPool = allFunnels.filter(function (f) { return f !== "Old Funnel"; });
+
+  var p1html = '<p class="lb-instruction">Position 1 (Front) — Old Funnel not allowed. Tap a funnel:</p>';
+  p1html += '<div class="item-row" id="ch9-p1-row"></div>';
+  document.getElementById("ch9-restricted-slot").innerHTML = p1html;
+  var row = document.getElementById("ch9-p1-row");
+  restrictedPool.forEach(function (f) {
+    var chip = document.createElement("div");
+    chip.className = "item-chip";
+    chip.textContent = f;
+    chip.onclick = function () {
+      Array.prototype.forEach.call(row.children, function (c) { c.classList.remove("picked"); });
+      chip.classList.add("picked");
+      var remainingPool = allFunnels.filter(function (x) { return x !== f; });
+      var box = document.getElementById("ch9-remaining-slots");
+      box.style.display = "block";
+      shrinkingPoolWidget("ch9-remaining-slots", remainingPool, ["Position 2", "Position 3", "Position 4"], function () {
+        markStageDone(chId, 0);
+      });
+    };
+    row.appendChild(chip);
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">🔢 Fix the Restricted Slot First</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Work through the pool sizes in order, exactly as you filled the funnels above.</p>';
+  html += '<div id="ch9-chain"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var box = document.getElementById("ch9-chain");
+  box.innerHTML = '<p style="margin-top:6px">Position 1: how many funnels are allowed (excluding the Old Funnel)?</p><div id="ch9-c1"></div>';
+  answerCheckWidget("ch9-c1", 3, function () {
+    box.innerHTML += '<p style="margin-top:14px">Position 2: how many funnels remain now (Old Funnel is allowed here)?</p><div id="ch9-c2"></div>';
+    answerCheckWidget("ch9-c2", 3, function () {
+      box.innerHTML += '<p style="margin-top:14px">Position 3: how many remain?</p><div id="ch9-c3"></div>';
+      answerCheckWidget("ch9-c3", 2, function () {
+        box.innerHTML += '<p style="margin-top:14px">Position 4: how many remain?</p><div id="ch9-c4"></div>';
+        answerCheckWidget("ch9-c4", 1, function () {
+          box.innerHTML += '<p style="margin-top:14px">Multiply all four: total valid arrangements?</p><div id="ch9-c5"></div>';
+          answerCheckWidget("ch9-c5", 18, function () { markStageDone(chId, 1); });
+        });
+      });
+    });
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Predict With Two Restricted Slots</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Now there are <strong>5</strong> funnels, and the Old Funnel can\'t go in Position 1 <strong>OR</strong> Position 2. Fix those two slots first (each only allows non-Old funnels), then fill the rest freely. Predict the total.</p>';
+  html += '<div class="callout engineer">Position 1: 4 choices &middot; Position 2: 3 choices (one non-Old funnel already used) &middot; Positions 3,4,5: fill freely from what remains.</div>';
+  html += '<div id="ch9-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch9-s2-check", 4*3*3*2*1, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Why Fix the Restricted Slot First</div>';
+  html += '<div class="concept-body">';
+  html += '<p>If you filled the EASY slots first, you might accidentally use up the only funnels the restricted slot was allowed to have — or you\'d have to keep checking "wait, is the Old Funnel still available?" at every step. Filling the restricted slot first locks in its limited choices immediately, so every slot after it has a clean, well-defined pool size.</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch9-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch9-s3-guided", chId, 3, [
+    { t: "text", v: "Filling the restricted slot first works because it " },
+    { t: "blank", options: ["locks in its limited choices immediately", "removes the guesswork first", "handles the hardest part first"] },
+    { t: "text", v: ", so every slot after it has a " },
+    { t: "blank", options: ["clean, well-defined pool", "clear number of choices", "predictable pool size"] },
+    { t: "text", v: "." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>5 officers stand in a row for a photo. Officer C is claustrophobic and refuses to stand in the middle (Position 3). How many valid arrangements are there?</p>';
+  html += '<div id="ch9-s4-check1"></div>';
+  html += '<div class="callout" id="ch9-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Officer D also refuses to stand at either end (Position 1 or Position 5). How many valid arrangements now (with BOTH restrictions)?</div>';
+  html += '<div id="ch9-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 96;
+  answerCheckWidget("ch9-s4-check1", base, function () {
+    document.getElementById("ch9-s4-stretch").style.display = "block";
+    document.getElementById("ch9-s4-check2").style.display = "block";
+    answerCheckWidget("ch9-s4-check2", 60, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 10 — Complementary Counting (Total minus Bad)
+   ========================================================= */
+
+var CH10_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">➖ Building the "Bad" Team</div>';
+  html += '<div class="concept-body">';
+  html += '<p>6 engineers are available: 2 <strong>Seniors</strong> (S1, S2) and 4 <strong>Juniors</strong> (J1–J4). We need a maintenance team of 3 with <strong>at least one Senior</strong>.</p>';
+  html += '<p style="margin-top:8px">Counting "at least one" directly is tricky. It\'s easier to build the OPPOSITE first: a team with <strong>NO Seniors at all</strong>. Build one below, using only Juniors.</p>';
+  html += '<div id="ch10-team"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  teamBuilderWidget("ch10-team", ["J1","J2","J3","J4"], 3, function () {
+    markStageDone(chId, 0);
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">➗ Total minus Bad = Good</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Work through it step by step.</p>';
+  html += '<div id="ch10-chain"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var box = document.getElementById("ch10-chain");
+  box.innerHTML = '<p style="margin-top:6px">TOTAL: how many teams of 3 can be made from all 6 engineers (no restriction)?</p><div id="ch10-c1"></div>';
+  answerCheckWidget("ch10-c1", 20, function () {
+    box.innerHTML += '<p style="margin-top:14px">BAD: how many teams of 3 use ONLY the 4 Juniors (no Seniors)?</p><div id="ch10-c2"></div>';
+    answerCheckWidget("ch10-c2", 4, function () {
+      box.innerHTML += '<p style="margin-top:14px">GOOD: Total &minus; Bad = teams with at least one Senior?</p><div id="ch10-c3"></div>';
+      answerCheckWidget("ch10-c3", 16, function () { markStageDone(chId, 1); });
+    });
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Predict a Bigger Crew</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Now there are 7 engineers: 3 Seniors and 4 Juniors. Choose a team of 3 with at least one Senior. Predict using Total &minus; Bad.</p>';
+  html += '<div class="callout engineer">Total teams of 3 from 7 &middot; Bad = teams of 3 using only the 4 Juniors.</div>';
+  html += '<div id="ch10-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch10-s2-check", 31, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Total = Good + Bad, Exactly</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Every possible team falls into EXACTLY one of two categories: "has at least one Senior" (Good) or "has no Seniors at all" (Bad) — never both, never neither. That\'s the Addition Principle from Chapter 5 again: two non-overlapping piles that together make the Total. So Good = Total &minus; Bad always works, with nothing missed and nothing double-counted.</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch10-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch10-s3-guided", chId, 3, [
+    { t: "text", v: "Good + Bad always equals the Total because every team falls into " },
+    { t: "blank", options: ["exactly one of the two groups", "only one category", "one or the other, never both"] },
+    { t: "text", v: ", just like the Addition Principle from Chapter 5." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>8 engineers are available: 3 Seniors and 5 Juniors. Choose a team of 4 with at least one Senior. How many valid teams?</p>';
+  html += '<div id="ch10-s4-check1"></div>';
+  html += '<div class="callout" id="ch10-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Now the team must have <strong>at least TWO</strong> Seniors. Hint: count exactly-2-Senior teams, then exactly-3-Senior teams, and add them.</div>';
+  html += '<div id="ch10-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 65;
+  answerCheckWidget("ch10-s4-check1", base, function () {
+    document.getElementById("ch10-s4-stretch").style.display = "block";
+    document.getElementById("ch10-s4-check2").style.display = "block";
+    answerCheckWidget("ch10-s4-check2", 35, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 11 — Repetition & Recursion
+   ========================================================= */
+
+var CH11_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🔴🟢 A 3-Lantern Signal Code</div>';
+  html += '<div class="concept-body">';
+  html += '<p>2 lantern colours (Red, Green) light up a 3-position signal. UNLIKE Chapter 7\'s roster, colours CAN repeat — the same colour can be used in more than one position.</p>';
+  html += '<div id="ch11-lb"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  listBuilderWidget("ch11-lb", ["🔴","🟢"], 3, "seq", chId, function () { markStageDone(chId, 0); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">🔁 The Pool Never Shrinks</div>';
+  html += '<div class="concept-body">';
+  html += '<p>In Chapter 7\'s roster, the pool shrank by 1 each pick. Here, since repeats are allowed, EVERY position has the full pool again: 2 &times; 2 &times; 2 = 2&sup3; = 8.</p>';
+  html += '<p style="margin-top:10px">Predict: 3 lantern colours, 3 positions, repeats allowed. How many signals?</p>';
+  html += '<div id="ch11-s1-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch11-s1-check", 27, function () { markStageDone(chId, 1); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">🪜 Climbing the Engine Room Ladder</div>';
+  html += '<div class="concept-body">';
+  html += '<p>New puzzle: you climb a ladder taking <strong>1 or 2 rungs</strong> at a time. How many different ways to climb a ladder of height <em>n</em>?</p>';
+  html += '<div id="ch11-ladder"></div>';
+  html += '<div style="margin-top:14px">Predict <strong>ways(4)</strong> — a height-4 ladder. Look at the pattern in the table above.</div>';
+  html += '<div id="ch11-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var rows = "";
+  for (var n = 1; n <= 3; n++) {
+    var ways = climbCompositions(n);
+    rows += '<div style="margin-top:8px"><strong>ways(' + n + ') = ' + ways.length + '</strong> &nbsp; ' + ways.map(function (w) { return "[" + w.join(",") + "]"; }).join("  ") + '</div>';
+  }
+  document.getElementById("ch11-ladder").innerHTML = '<div class="callout engineer">' + rows + '</div>';
+
+  answerCheckWidget("ch11-s2-check", climbCompositions(4).length, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 The Last Step Rule</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Think about the VERY LAST step you take to reach rung n. It was EITHER a 1-step (from rung n&minus;1) OR a 2-step (from rung n&minus;2) — never both, never neither. That\'s the Addition Principle again from Chapter 5! So:</p>';
+  html += '<div class="callout engineer">ways(n) = ways(n&minus;1) + ways(n&minus;2)</div>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch11-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch11-s3-guided", chId, 3, [
+    { t: "text", v: "Splitting by the last step covers every path exactly once because the last move was " },
+    { t: "blank", options: ["either a 1-step or a 2-step", "one of two choices", "always one or the other"] },
+    { t: "text", v: ", never both and never neither." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>A ship ID code uses 5 possible symbols across 4 positions, and symbols CAN repeat. How many different ID codes are possible?</p>';
+  html += '<div id="ch11-s4-check1"></div>';
+  html += '<div class="callout" id="ch11-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> Back to the ladder: ways(4) = 5 and ways(5) = 8. Using ways(n) = ways(n&minus;1) + ways(n&minus;2), what is ways(6)?</div>';
+  html += '<div id="ch11-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = Math.pow(5, 4);
+  answerCheckWidget("ch11-s4-check1", base, function () {
+    document.getElementById("ch11-s4-stretch").style.display = "block";
+    document.getElementById("ch11-s4-check2").style.display = "block";
+    answerCheckWidget("ch11-s4-check2", climbCompositions(6).length, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+/* =========================================================
+   CHAPTER 12 — Chief Engineer's Toolkit (tool selection, capstone)
+   ========================================================= */
+
+var TOOL_DEFS = [
+  { name: "Addition", desc: "OR — pick ONE from separate piles. Add the pile sizes." },
+  { name: "Multiplication", desc: "AND — pick ONE from EACH independent group. Multiply straight across." },
+  { name: "Permutation", desc: "Arrange r people/items into distinct roles, no repeats. The pool shrinks each pick." },
+  { name: "Combination", desc: "Choose r items, unordered, no repeats. Divide the ordered count by r!." },
+  { name: "Restriction", desc: "Some slot has limited options. Fix that slot first, then fill the rest freely." },
+  { name: "Complementary", desc: "\"At least one\" is hard directly. Count Total minus Bad instead." },
+  { name: "Repetition", desc: "Items CAN repeat. Every position keeps the full pool — multiply the same number n times." },
+  { name: "Recursion", desc: "Build the count from smaller versions of the same problem, split by the last step." }
+];
+
+var CH12_STAGES = [
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🧰 The Chief Engineer\'s Toolbox</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Eleven chapters, eight tools. Tap each tool below to review what it does before the final tests.</p>';
+  html += '<div class="item-row" id="ch12-tools"></div>';
+  html += '<div class="callout engineer" id="ch12-tool-detail" style="margin-top:14px">Tap a tool above to see what it does.</div>';
+  html += '<div class="lb-progress" id="ch12-tool-progress" style="margin-top:8px">Reviewed: 0 / 8</div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var row = document.getElementById("ch12-tools");
+  var seen = new Array(TOOL_DEFS.length).fill(false);
+  var seenCount = 0;
+  TOOL_DEFS.forEach(function (tool, i) {
+    var chip = document.createElement("div");
+    chip.className = "item-chip";
+    chip.textContent = tool.name;
+    chip.onclick = function () {
+      document.getElementById("ch12-tool-detail").innerHTML = "<strong>" + tool.name + ":</strong> " + tool.desc;
+      if (!seen[i]) { seen[i] = true; seenCount++; document.getElementById("ch12-tool-progress").textContent = "Reviewed: " + seenCount + " / " + TOOL_DEFS.length; }
+      if (seenCount === TOOL_DEFS.length) markStageDone(chId, 0);
+    };
+    row.appendChild(chip);
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">🕵️ Tool Detective</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Read each scenario and tap the ONE tool that fits best.</p>';
+  html += '<div id="ch12-detective"></div>';
+  html += '<div class="lb-progress" id="ch12-det-progress" style="margin-top:10px">Solved: 0 / 8</div>';
+  html += '</div>';
+  root.innerHTML = html;
+
+  var scenarios = [
+    { text: "Grab a wrench OR a spanner for a quick job.", tool: "Addition" },
+    { text: "Set the pressure dial AND the valve dial for one setting.", tool: "Multiplication" },
+    { text: "Assign a Captain and a First Officer from 5 people — order matters, no repeats.", tool: "Permutation" },
+    { text: "Choose 3 inspectors from 6 people — no roles, order doesn't matter.", tool: "Combination" },
+    { text: "Officer C can't stand in the middle position.", tool: "Restriction" },
+    { text: "A team needs AT LEAST one senior engineer.", tool: "Complementary" },
+    { text: "Build a 3-digit code where digits CAN repeat.", tool: "Repetition" },
+    { text: "Climb a ladder 1 or 2 rungs at a time — how many ways?", tool: "Recursion" }
+  ];
+  var solved = new Array(scenarios.length).fill(false);
+  var solvedCount = 0;
+  var box = document.getElementById("ch12-detective");
+  var toolNames = TOOL_DEFS.map(function (t) { return t.name; });
+
+  scenarios.forEach(function (sc, i) {
+    var card = document.createElement("div");
+    card.className = "callout";
+    card.style.marginTop = "10px";
+    card.innerHTML = '<div>' + sc.text + '</div><div class="item-row" id="ch12-det-opts-' + i + '" style="margin-top:8px"></div><div id="ch12-det-fb-' + i + '" style="margin-top:6px;font-size:12.5px;font-weight:600"></div>';
+    box.appendChild(card);
+    var optsRow = card.querySelector("#ch12-det-opts-" + i);
+    toolNames.forEach(function (name) {
+      var chip = document.createElement("div");
+      chip.className = "item-chip";
+      chip.style.fontSize = "12px";
+      chip.style.padding = "7px 10px";
+      chip.textContent = name;
+      chip.onclick = function () {
+        if (solved[i]) return;
+        var fb = document.getElementById("ch12-det-fb-" + i);
+        if (name === sc.tool) {
+          fb.style.color = "#1e5c40";
+          fb.textContent = "✅ " + sc.tool + " — correct!";
+          solved[i] = true;
+          solvedCount++;
+          document.getElementById("ch12-det-progress").textContent = "Solved: " + solvedCount + " / " + scenarios.length;
+          if (solvedCount === scenarios.length) markStageDone(chId, 1);
+        } else {
+          fb.style.color = "#C0392B";
+          fb.textContent = "Not quite — reread the scenario for the key signal words.";
+        }
+      };
+      optsRow.appendChild(chip);
+    });
+  });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">🗺️ Combining Two Tools</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Real problems often need TWO tools stacked together. Try this one:</p>';
+  html += '<div class="callout engineer">9 officers need to fill 4 DISTINCT roles (order matters, no repeats) — but Officer X can\'t take Role 1. Which two tools do you need? (Permutation + Restriction — fix Role 1 first, then arrange the rest freely.)</div>';
+  html += '<p style="margin-top:10px">Work it out: how many valid role assignments are there?</p>';
+  html += '<div id="ch12-s2-check"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  answerCheckWidget("ch12-s2-check", 8*8*7*6, function () { markStageDone(chId, 2); });
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Only Two Ideas, All Along</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Every tool in this toolkit is really just a clever disguise. Restrictions, Complementary Counting, Repetition, and Recursion are all built from just two foundational ideas: the Addition Principle (Chapter 5) and the Multiplication Principle (Chapter 6).</p>';
+  html += '<p>Build the explanation below:</p>';
+  html += '<div id="ch12-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch12-s3-guided", chId, 3, [
+    { t: "text", v: "Every tool in this toolkit is really just a clever way of applying " },
+    { t: "blank", options: ["Addition and Multiplication", "the OR and AND principles", "the two Chapter 5 and 6 ideas"] },
+    { t: "text", v: " — the two ideas everything else was built from." }
+  ]);
+},
+
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Challenge Ladder: Explorer → Inventor</div>';
+  html += '<div class="concept-body">';
+  html += '<p><strong>🧭 Explorer:</strong> 6 signal flags (A–F) exist, but flag F is broken and can\'t be used. A message uses exactly 3 DIFFERENT flags, in order. How many valid messages are possible?</p>';
+  html += '<div id="ch12-s4-check1"></div>';
+  html += '<div class="callout" id="ch12-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Inventor:</strong> Flag A is the SOS flag — if it\'s used in a message at all, it MUST be in the first position. How many valid messages now (still no flag F, still 3 different flags)?</div>';
+  html += '<div id="ch12-s4-check2" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var base = 60;
+  answerCheckWidget("ch12-s4-check1", base, function () {
+    document.getElementById("ch12-s4-stretch").style.display = "block";
+    document.getElementById("ch12-s4-check2").style.display = "block";
+    answerCheckWidget("ch12-s4-check2", 36, function () { markStageDone(chId, 4); });
+  });
+}
+];
+
+var CHAPTER_STAGES = { ch1: CH1_STAGES, ch2: CH2_STAGES, ch3: CH3_STAGES, ch4: CH4_STAGES, ch5: CH5_STAGES, ch6: CH6_STAGES, ch7: CH7_STAGES, ch8: CH8_STAGES, ch9: CH9_STAGES, ch10: CH10_STAGES, ch11: CH11_STAGES, ch12: CH12_STAGES };
+var CHAPTER_META = {};
+CHAPTERS.forEach(function (c) { CHAPTER_META[c.id] = c; });
+
+/* =========================================================
+   CHAPTER VIEW
+   ========================================================= */
+
+function renderChapter(chId, stageIdx) {
+  var meta = CHAPTER_META[chId];
+  var st = getChapterState(chId);
+  if (stageIdx > st.stage) stageIdx = st.stage; // can't skip ahead of progress
+  st.stage = Math.max(st.stage, stageIdx);
+  saveProgress(PROGRESS);
+
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Ch.' + meta.num + ' &middot; Part A</div>';
+  html += '<div class="hdr-title">' + meta.emoji + ' ' + meta.title + '</div>';
+  html += '<div class="hdr-sub">' + meta.subtitle + '</div></div>';
+
+  html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
+
+  html += '<div class="stage-tracker">';
+  STAGE_LABELS.forEach(function (label, i) {
+    var cls = "stage-dot";
+    if (i === stageIdx) cls += " active"; else if (st.stageDone[i]) cls += " done";
+    html += '<div class="' + cls + '">' + label + '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="concept-card" id="stage-content"></div>';
+
+  html += '<div class="stage-nav">';
+  if (stageIdx > 0) html += '<button class="btn" onclick="CSApp.nav(\'chapter\',\'' + chId + '\',' + (stageIdx - 1) + ')">‹ Back</button>';
+  html += '<button class="btn amber" onclick="CSApp.hint(\'' + chId + '\')">💡 Show me the next step</button>';
+  var canAdvance = st.stageDone[stageIdx];
+  if (stageIdx < 4) {
+    html += '<button class="btn primary" ' + (canAdvance ? '' : 'disabled') + ' onclick="CSApp.nextStage(\'' + chId + '\',' + stageIdx + ')">Next Stage ›</button>';
+  } else {
+    html += '<button class="btn primary" ' + (canAdvance ? '' : 'disabled') + ' onclick="CSApp.nav(\'drawmemory\',\'' + chId + '\')">Finish Chapter ✓</button>';
+  }
+  html += '</div>';
+
+  document.getElementById("app").innerHTML = html;
+  var contentEl = document.getElementById("stage-content");
+  CHAPTER_STAGES[chId][stageIdx](chId, contentEl);
+}
+
+function hintCurrentChapter(chId) {
+  useHint(chId);
+  render();
+}
+
+function nextStage(chId, currentStageIdx) {
+  var st = getChapterState(chId);
+  if (st.stageDone[currentStageIdx] && st.stage < currentStageIdx + 1) {
+    st.stage = currentStageIdx + 1;
+    saveProgress(PROGRESS);
+  }
+  nav("chapter", chId, currentStageIdx + 1);
+}
+
+/* =========================================================
+   BOSS BATTLE 1
+   ========================================================= */
+
+function renderBoss1() {
+  var st = getChapterState(BOSS1.id);
+  var flags = ["A","B","C","D"];
+
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Boss Battle 1 &middot; Part A Checkpoint</div>';
+  html += '<div class="hdr-title">👹 The Captain\'s Missing Signal</div>';
+  html += '<div class="hdr-sub">No formulas allowed — draw, organise, count, check.</div></div>';
+
+  html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
+
+  html += '<div class="boss-card">';
+  html += '<div class="boss-eyebrow">The Problem</div>';
+  html += '<div class="boss-title">🚩 Flags A, B, C, D — but D is reserved</div>';
+  html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">The bridge wants to hoist <strong>2 different flags in order</strong> (first flag, then second flag) to send a message. But flag <strong>D</strong> is reserved for SOS only — it can never be the <strong>first</strong> flag hoisted (it CAN be second). How many valid two-flag messages can be sent?</p>';
+
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — DRAW</div><p>Sketch or picture all 4 flags: A, B, C, D.</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ORGANISE</div><p>List row by row, one starting flag at a time — cross out D as a starting flag before you begin.</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — COUNT</div><p>Reveal your rows below and count every valid message.</p></div>';
+  html += '<div id="boss1-lb" style="margin-top:10px"></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 4 — CHECK</div><p>Type your final count.</p></div>';
+  html += '<div id="boss1-check" style="margin-top:10px"></div>';
+  html += '</div>';
+
+  html += '<div class="stage-nav"><button class="btn amber" onclick="CSApp.hint(\'' + BOSS1.id + '\')">💡 Show me the next step</button></div>';
+
+  document.getElementById("app").innerHTML = html;
+
+  var valid = kPermutations(flags, 2).filter(function (p) { return p[0] !== "D"; });
+  var lbTarget = valid;
+  var found = new Array(lbTarget.length).fill(false);
+  var foundCount = 0;
+  function drawLb() {
+    var h = '<div class="lb-grid">';
+    lbTarget.forEach(function (t, i) {
+      h += '<div class="lb-cell' + (found[i] ? ' found' : '') + '">' + (found[i] ? t.join("") : "?") + '</div>';
+    });
+    h += '</div><div class="lb-progress">Found: ' + foundCount + ' / ' + lbTarget.length + '</div>';
+    h += '<div class="lb-btn-row"><button class="btn small" id="boss1-reveal">Reveal one</button>';
+    h += '<button class="btn small amber" id="boss1-revealall">Reveal all (uses a star)</button></div>';
+    document.getElementById("boss1-lb").innerHTML = h;
+    document.getElementById("boss1-reveal").onclick = function () {
+      var idx = found.indexOf(false);
+      if (idx === -1) return;
+      found[idx] = true; foundCount++;
+      drawLb();
+    };
+    document.getElementById("boss1-revealall").onclick = function () {
+      useHint(BOSS1.id);
+      for (var i = 0; i < found.length; i++) found[i] = true;
+      foundCount = lbTarget.length;
+      drawLb();
+      render();
+    };
+  }
+  drawLb();
+
+  answerCheckWidget("boss1-check", valid.length, function () {
+    markStageDone(BOSS1.id, 4);
+    st.done = true;
+    saveProgress(PROGRESS);
+    setTimeout(function () {
+      alert("👹 BOSS DEFEATED! Part A of the Combinatorics Sketchbook is complete. Chief Engineer, Part B is next.");
+      nav("home");
+    }, 300);
+  });
+}
+
+/* =========================================================
+   BOSS BATTLE 2
+   ========================================================= */
+
+function renderBoss2() {
+  var st = getChapterState(BOSS2.id);
+
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Boss Battle 2 &middot; Part B Checkpoint</div>';
+  html += '<div class="hdr-title">👹 The Bridge Team Assembly</div>';
+  html += '<div class="hdr-sub">Every principle from Part B, one after another.</div></div>';
+
+  html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
+
+  html += '<div class="boss-card">';
+  html += '<div class="boss-eyebrow">The Problem</div>';
+  html += '<div class="boss-title">📸 Assembling the Maiden Voyage Photo</div>';
+  html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">The bridge is setting up a photo. Work through each part below, in order — each part uses one of the four skills from Part B.</p>';
+
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — SIGNAL (Addition)</div><p>The team sends one signal: EITHER a flag (3 types) OR a lantern (2 types). How many signal choices?</p></div>';
+  html += '<div id="boss2-check1" style="margin-top:8px"></div>';
+
+  html += '<div id="boss2-part2" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ROSTER (Permutation)</div><p>From 5 available officers, assign a Captain AND a First Officer for the photo (2 distinct roles, order matters). How many rosters?</p></div>';
+  html += '<div id="boss2-check2" style="margin-top:8px"></div>';
+  html += '</div>';
+
+  html += '<div id="boss2-part3" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — HONOR GUARD (Combination)</div><p>The Captain and First Officer are now used up — 3 officers remain. Choose 2 of them (unordered) to stand as the honor guard. How many teams?</p></div>';
+  html += '<div id="boss2-check3" style="margin-top:8px"></div>';
+  html += '</div>';
+
+  html += '<div id="boss2-part4" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 4 — COMBINE</div><p>Multiply all three answers together (signal × roster × honor guard) for the grand total number of ways to set up the whole photo.</p></div>';
+  html += '<div id="boss2-check4" style="margin-top:8px"></div>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div class="stage-nav"><button class="btn amber" onclick="CSApp.hint(\'' + BOSS2.id + '\')">💡 Show me the next step</button></div>';
+
+  document.getElementById("app").innerHTML = html;
+
+  var signalAns = 3 + 2;
+  var rosterAns = 5 * 4;
+  var guardAns = 3;
+  var finalAns = signalAns * rosterAns * guardAns;
+
+  answerCheckWidget("boss2-check1", signalAns, function () {
+    document.getElementById("boss2-part2").style.display = "block";
+    answerCheckWidget("boss2-check2", rosterAns, function () {
+      document.getElementById("boss2-part3").style.display = "block";
+      answerCheckWidget("boss2-check3", guardAns, function () {
+        document.getElementById("boss2-part4").style.display = "block";
+        answerCheckWidget("boss2-check4", finalAns, function () {
+          markStageDone(BOSS2.id, 4);
+          st.done = true;
+          saveProgress(PROGRESS);
+          setTimeout(function () {
+            alert("👹 BOSS DEFEATED! Part B of the Combinatorics Sketchbook is complete. Chief Engineer, Part C is next.");
+            nav("home");
+          }, 300);
+        });
+      });
+    });
+  });
+}
+
+/* =========================================================
+   BOSS BATTLE 3
+   ========================================================= */
+
+function renderBoss3() {
+  var st = getChapterState(BOSS3.id);
+
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Boss Battle 3 &middot; Part C Checkpoint</div>';
+  html += '<div class="hdr-title">👹 The Captain\'s Final Inspection Day</div>';
+  html += '<div class="hdr-sub">Every principle from Part C, one after another.</div></div>';
+
+  html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
+
+  html += '<div class="boss-card">';
+  html += '<div class="boss-eyebrow">The Problem</div>';
+  html += '<div class="boss-title">🔍 Inspection Day Logistics</div>';
+  html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">Work through each part below, in order — each part uses one of the three Part C skills.</p>';
+
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — RESTRICTION</div><p>5 officers line up for inspection. Officer A is still recovering and can\'t stand in Position 1. How many valid lineups?</p></div>';
+  html += '<div id="boss3-check1" style="margin-top:8px"></div>';
+
+  html += '<div id="boss3-part2" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — COMPLEMENT</div><p>6 crew members (2 Seniors, 4 Juniors) need a maintenance team of 3 with at least one Senior. How many valid teams?</p></div>';
+  html += '<div id="boss3-check2" style="margin-top:8px"></div>';
+  html += '</div>';
+
+  html += '<div id="boss3-part3" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — REPETITION</div><p>A signal uses 2 lantern colours across 3 positions, and colours CAN repeat. How many possible signals?</p></div>';
+  html += '<div id="boss3-check3" style="margin-top:8px"></div>';
+  html += '</div>';
+
+  html += '<div id="boss3-part4" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 4 — COMBINE</div><p>Multiply all three answers together for the grand total number of ways the whole inspection day could unfold.</p></div>';
+  html += '<div id="boss3-check4" style="margin-top:8px"></div>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div class="stage-nav"><button class="btn amber" onclick="CSApp.hint(\'' + BOSS3.id + '\')">💡 Show me the next step</button></div>';
+
+  document.getElementById("app").innerHTML = html;
+
+  var restrictionAns = 96;
+  var complementAns = 16;
+  var repetitionAns = 8;
+  var finalAns = restrictionAns * complementAns * repetitionAns;
+
+  answerCheckWidget("boss3-check1", restrictionAns, function () {
+    document.getElementById("boss3-part2").style.display = "block";
+    answerCheckWidget("boss3-check2", complementAns, function () {
+      document.getElementById("boss3-part3").style.display = "block";
+      answerCheckWidget("boss3-check3", repetitionAns, function () {
+        document.getElementById("boss3-part4").style.display = "block";
+        answerCheckWidget("boss3-check4", finalAns, function () {
+          markStageDone(BOSS3.id, 4);
+          st.done = true;
+          saveProgress(PROGRESS);
+          setTimeout(function () {
+            alert("👹 BOSS DEFEATED! Part C of the Combinatorics Sketchbook is complete. Chief Engineer, Part D is next.");
+            nav("home");
+          }, 300);
+        });
+      });
+    });
+  });
+}
+
+/* =========================================================
+   BOSS BATTLE 4 — Final Checkpoint
+   ========================================================= */
+
+function renderBoss4() {
+  var st = getChapterState(BOSS4.id);
+
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Boss Battle 4 &middot; Final Checkpoint</div>';
+  html += '<div class="hdr-title">🎓 The Graduation Voyage</div>';
+  html += '<div class="hdr-sub">One skill from every Part of the manual.</div></div>';
+
+  html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
+
+  html += '<div class="boss-card">';
+  html += '<div class="boss-eyebrow">The Problem</div>';
+  html += '<div class="boss-title">🎓 The Final Inspection Voyage</div>';
+  html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">Work through each part below, in order — each one uses a skill from a different Part of the manual.</p>';
+
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — DIALS (Part A)</div><p>The engine has 3 power settings AND 2 antenna types. How many full setups?</p></div>';
+  html += '<div id="boss4-check1" style="margin-top:8px"></div>';
+
+  html += '<div id="boss4-part2" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ROSTER (Part B)</div><p>From 5 officers, assign a Captain AND a First Officer (2 distinct roles, order matters). How many rosters?</p></div>';
+  html += '<div id="boss4-check2" style="margin-top:8px"></div>';
+  html += '</div>';
+
+  html += '<div id="boss4-part3" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — TEAM (Part C)</div><p>6 crew (2 Seniors, 4 Juniors) need a team of 3 with at least one Senior. How many valid teams?</p></div>';
+  html += '<div id="boss4-check3" style="margin-top:8px"></div>';
+  html += '</div>';
+
+  html += '<div id="boss4-part4" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 4 — SIGNAL (Part D)</div><p>A signal uses 2 lantern colours across 3 positions, colours CAN repeat. How many signals?</p></div>';
+  html += '<div id="boss4-check4" style="margin-top:8px"></div>';
+  html += '</div>';
+
+  html += '<div id="boss4-part5" style="display:none">';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 5 — COMBINE</div><p>Multiply all four answers together for the grand total.</p></div>';
+  html += '<div id="boss4-check5" style="margin-top:8px"></div>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div class="stage-nav"><button class="btn amber" onclick="CSApp.hint(\'' + BOSS4.id + '\')">💡 Show me the next step</button></div>';
+
+  document.getElementById("app").innerHTML = html;
+
+  var s1 = 3 * 2;
+  var s2 = 5 * 4;
+  var s3 = 16;
+  var s4 = 8;
+  var finalAns = s1 * s2 * s3 * s4;
+
+  answerCheckWidget("boss4-check1", s1, function () {
+    document.getElementById("boss4-part2").style.display = "block";
+    answerCheckWidget("boss4-check2", s2, function () {
+      document.getElementById("boss4-part3").style.display = "block";
+      answerCheckWidget("boss4-check3", s3, function () {
+        document.getElementById("boss4-part4").style.display = "block";
+        answerCheckWidget("boss4-check4", s4, function () {
+          document.getElementById("boss4-part5").style.display = "block";
+          answerCheckWidget("boss4-check5", finalAns, function () {
+            markStageDone(BOSS4.id, 4);
+            st.done = true;
+            saveProgress(PROGRESS);
+            setTimeout(function () {
+              alert("🎓 GRADUATION COMPLETE! All 12 chapters and 4 Boss Battles cleared. The Master Map is now unlocked, Chief Engineer.");
+              nav("home");
+            }, 300);
+          });
+        });
+      });
+    });
+  });
+}
+
+/* =========================================================
+   MASTER MAP — Finale
+   ========================================================= */
+
+function renderMasterMap() {
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">RMS Design Files &middot; Final Blueprint</div>';
+  html += '<div class="hdr-title">🗺️ Master Map</div>';
+  html += '<div class="hdr-sub">All 12 chapters, one voyage.</div></div>';
+
+  html += '<div class="section">';
+  html += '<div class="boss-card" style="border-color:var(--amber)">';
+  html += '<div class="boss-eyebrow" style="color:var(--amber)">Certificate of Completion</div>';
+  html += '<div class="boss-title">⚓ Chief Engineer, Counting &amp; Combinatorics Wing</div>';
+  html += '<p style="font-size:13.5px;line-height:1.6;margin-top:8px;color:rgba(255,255,255,0.9)">4 Parts. 12 chapters. 4 Boss Battles. Every tool from Addition to Recursion — earned one tap-to-build stage at a time.</p>';
+  html += '</div></div>';
+
+  PARTS.forEach(function (part) {
+    var chapters = CHAPTERS.filter(function (c) { return c.part === part.key; });
+    var html2 = '<div class="section"><div class="part-header">' + part.title + '</div>';
+    html2 += '<div class="missions">';
+    chapters.forEach(function (c) {
+      var st = getChapterState(c.id);
+      html2 += '<div class="mission-card" style="padding:12px 16px">';
+      html2 += '<div class="mission-top"><div class="mission-emoji" style="width:34px;height:34px;font-size:18px">' + c.emoji + '</div>';
+      html2 += '<div class="mission-info"><div class="mission-name" style="font-size:13.5px">Ch.' + c.num + ' — ' + c.title + '</div></div>';
+      html2 += '<div style="font-size:16px">' + (st.done ? "✅" : "⬜") + '</div></div>';
+      html2 += '</div>';
+    });
+    var bossSt = getChapterState(part.boss.id);
+    html2 += '<div class="mission-card" style="padding:12px 16px;background:var(--teal-dark);border-color:var(--coral)">';
+    html2 += '<div class="mission-top"><div class="mission-emoji" style="width:34px;height:34px;font-size:18px">' + part.boss.emoji + '</div>';
+    html2 += '<div class="mission-info"><div class="mission-name" style="font-size:13.5px;color:#fff">' + part.boss.title + '</div></div>';
+    html2 += '<div style="font-size:16px">' + (bossSt.done ? "✅" : "⬜") + '</div></div>';
+    html2 += '</div>';
+    html2 += '</div></div>';
+    html += html2;
+  });
+
+  html += '<div class="foot-note">Every number in this manual is computed live, never hardcoded. Part of J.J.\'s Engineering Academy.</div>';
+
+  document.getElementById("app").innerHTML = html;
+}
+
+/* =========================================================
+   DRAW-FROM-MEMORY
+   ========================================================= */
+
+var DRAW_PROMPTS = {
+  ch1: "Draw the difference between CHOOSE and ARRANGE, using 3 signal flags — no looking back at the chapter.",
+  ch2: "Draw the crossing-out method for pairing 3 officers into first &amp; second watch.",
+  ch3: "Draw a tree diagram for 2 pressure settings × 3 valve settings, from memory.",
+  ch4: "Draw an empty 3×3 cabin grid and label what rows × columns tells you.",
+  ch5: "Draw two separate tool piles (3 wrenches, 2 spanners) and show why OR means adding the piles.",
+  ch6: "Draw the wireless room's three dials and show how multiplying straight across gives the total.",
+  ch7: "Draw the shrinking pool for assigning 3 roles from 4 officers — show the numbers getting smaller.",
+  ch8: "Draw one team of 3 people and all the different orders it could have been picked in — show why you divide.",
+  ch9: "Draw the 4 funnels and show why you fill the restricted slot (Position 1) before any other slot.",
+  ch10: "Draw the Total circle split into Good and Bad pieces, and show why Good = Total minus Bad.",
+  ch11: "Draw the ladder-climbing table for ways(1) through ways(4) and show the last-step rule.",
+  ch12: "Draw your own toolbox with all 8 tools and one signal word that tells you when to use each one."
+};
+
+function renderDrawMemory(chId) {
+  var meta = CHAPTER_META[chId];
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Closed-Book Review</div>';
+  html += '<div class="hdr-title">🧠 Draw From Memory</div>';
+  html += '<div class="hdr-sub">' + meta.title + '</div></div>';
+
+  html += '<div class="concept-card">';
+  html += '<div class="concept-body"><p>' + DRAW_PROMPTS[chId] + '</p>';
+  html += '<p style="color:var(--ink-soft);font-size:12.5px">Close the chapter in your mind first. Sketch on the pad below with your finger or mouse.</p>';
+  html += '<div class="pad-box"><canvas id="draw-canvas" height="260"></canvas></div>';
+  html += '<div class="pad-tools"><button class="btn small" id="pad-clear">Clear</button></div>';
+  html += '<button class="btn primary" id="pad-done" style="margin-top:14px;width:100%">I drew it from memory ✓</button>';
+  html += '</div></div>';
+
+  document.getElementById("app").innerHTML = html;
+
+  var canvas = document.getElementById("draw-canvas");
+  var ctx = canvas.getContext("2d");
+  function fit() { canvas.width = canvas.clientWidth * 2; canvas.height = 260 * 2; ctx.scale(2,2); ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#0E2A45"; }
+  fit();
+  var drawing = false, lastX = 0, lastY = 0;
+  function pos(e) {
+    var rect = canvas.getBoundingClientRect();
+    var cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    var cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    return { x: cx, y: cy };
+  }
+  function start(e) { drawing = true; var p = pos(e); lastX = p.x; lastY = p.y; e.preventDefault(); }
+  function move(e) {
+    if (!drawing) return;
+    var p = pos(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
+    lastX = p.x; lastY = p.y; e.preventDefault();
+  }
+  function end() { drawing = false; }
+  canvas.addEventListener("mousedown", start);
+  canvas.addEventListener("mousemove", move);
+  window.addEventListener("mouseup", end);
+  canvas.addEventListener("touchstart", start, { passive: false });
+  canvas.addEventListener("touchmove", move, { passive: false });
+  canvas.addEventListener("touchend", end);
+
+  document.getElementById("pad-clear").onclick = function () { ctx.clearRect(0,0,canvas.width,canvas.height); };
+  document.getElementById("pad-done").onclick = function () {
+    PROGRESS.drawMemory[chId] = true;
+    saveProgress(PROGRESS);
+    nav("home");
+  };
+}
+
+/* =========================================================
+   ERROR LOG
+   ========================================================= */
+
+var ERR_TYPES = [
+  { code: "A", label: "Misread", desc: "Read the question wrong" },
+  { code: "B", label: "Double Count", desc: "Counted the same thing twice" },
+  { code: "C", label: "Missing Case", desc: "Forgot a case" },
+  { code: "D", label: "Wrong Strategy", desc: "Used the wrong counting method" },
+  { code: "E", label: "Calculation", desc: "Arithmetic slip" },
+  { code: "F", label: "Explanation", desc: "Right answer, couldn't explain why" }
+];
+
+function renderErrorLog() {
+  var log = loadErrorLog();
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Chief Engineer\'s Journal</div>';
+  html += '<div class="hdr-title">🔥 Error Log</div>';
+  html += '<div class="hdr-sub">Mistakes aren\'t "wrong" — they\'re a type. Name the type, fix the type.</div></div>';
+
+  html += '<div class="section"><div class="concept-card">';
+  html += '<div class="concept-title">Log a Mistake</div>';
+  html += '<div class="concept-body">';
+  html += '<div class="err-type-row" id="err-type-row">';
+  ERR_TYPES.forEach(function (t) {
+    html += '<div class="err-chip" data-code="' + t.code + '">' + t.code + ' &middot; ' + t.label + '</div>';
+  });
+  html += '</div>';
+  html += '<textarea class="note" id="err-note" placeholder="What happened, in one line?"></textarea>';
+  html += '<button class="btn primary small" id="err-save" style="margin-top:10px">Save to Log</button>';
+  html += '</div></div></div>';
+
+  html += '<div class="section"><div class="section-label">Past Entries</div>';
+  if (log.length === 0) {
+    html += '<div class="callout">No entries yet — that\'s a good sign, or you just haven\'t logged one.</div>';
+  } else {
+    log.slice().reverse().forEach(function (e) {
+      var t = ERR_TYPES.filter(function (x) { return x.code === e.code; })[0];
+      html += '<div class="err-log-entry"><span class="et">' + e.code + ' &middot; ' + (t ? t.label : "") + '</span><div>' + escapeHtml(e.note) + '</div></div>';
+    });
+  }
+  html += '</div>';
+
+  document.getElementById("app").innerHTML = html;
+
+  var selected = null;
+  var chips = document.querySelectorAll("#err-type-row .err-chip");
+  chips.forEach(function (chip) {
+    chip.onclick = function () {
+      chips.forEach(function (c) { c.classList.remove("sel"); });
+      chip.classList.add("sel");
+      selected = chip.getAttribute("data-code");
+    };
+  });
+  document.getElementById("err-save").onclick = function () {
+    var note = document.getElementById("err-note").value.trim();
+    if (!selected || !note) { alert("Pick an error type and write a one-line note first."); return; }
+    log.push({ code: selected, note: note, ts: Date.now() });
+    saveErrorLog(log);
+    renderErrorLog();
+  };
+}
+
+/* =========================================================
+   MAIN RENDER DISPATCH
+   ========================================================= */
+
+function render() {
+  if (route.view === "home") renderHome();
+  else if (route.view === "chapter") renderChapter(route.chapterId, route.stage);
+  else if (route.view === "boss1") renderBoss1();
+  else if (route.view === "boss2") renderBoss2();
+  else if (route.view === "boss3") renderBoss3();
+  else if (route.view === "boss4") renderBoss4();
+  else if (route.view === "mastermap") renderMasterMap();
+  else if (route.view === "drawmemory") renderDrawMemory(route.chapterId);
+  else if (route.view === "errorlog") renderErrorLog();
+}
+
+window.CSApp = {
+  nav: nav,
+  hint: hintCurrentChapter,
+  nextStage: nextStage
+};
+
+render();
+})();
+</script>
+</body>
+</html>
