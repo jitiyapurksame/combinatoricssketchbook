@@ -256,6 +256,28 @@ textarea.note {
 .warnbox { background: var(--nudge-bg); border: 1px solid rgba(179,130,44,0.5); color: var(--nudge-ink); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; }
 .backup-nudge { display: flex; align-items: center; gap: 10px; background: var(--nudge-bg); border: 1px dashed var(--amber-dark); color: var(--nudge-ink); border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.4; margin-bottom: 10px; }
 .backup-nudge .btn { flex: none; min-height: 44px; }
+.ovl { text-decoration: overline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
+.sw-row { display: flex; gap: 12px; margin-top: 12px; }
+.sw-btn { flex: 1; min-height: 96px; border: 2px solid var(--teal); background: var(--bg); color: var(--ink); border-radius: 14px; font-family: var(--mono); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sw-btn.on { background: var(--teal); color: #fff; }
+.sw-letter { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+.sw-val { font-size: 34px; font-weight: 700; line-height: 1; }
+.sw-state { font-size: 11px; }
+.gate-lamps { display: flex; gap: 8px; margin-top: 12px; }
+.gate-lamp { flex: 1; text-align: center; border: 1.5px solid rgba(14,42,69,0.2); border-radius: 12px; padding: 10px 4px; background: var(--bg); }
+.gate-lamp.lit { background: #FFF1C9; border-color: var(--amber-dark); }
+.gate-bulb { font-size: 28px; filter: grayscale(1); opacity: 0.35; }
+.gate-lamp.lit .gate-bulb { filter: none; opacity: 1; }
+.gate-name { font-family: var(--mono); font-weight: 700; font-size: 13px; margin-top: 2px; }
+.gate-rule { font-size: 11px; line-height: 1.35; color: var(--ink-soft); margin-top: 4px; }
+.gl-cell { text-align: center; font-family: var(--mono); font-weight: 700; font-size: 13px; padding: 12px 4px; border-radius: 8px; border: 1.5px dashed rgba(14,42,69,0.25); color: var(--ink-soft); }
+.gl-cell.found { background: var(--success-bg); border: 1.5px solid var(--success); color: #1e5c40; }
+.grid-table.tt td, .grid-table.tt th { font-size: 14px; }
+.grid-table.tt th.tt-help, .grid-table.tt td.tt-help { background: rgba(14,42,69,0.05); color: var(--ink-soft); }
+.grid-table.tt th.tt-help { background: var(--teal-dark); color: #fff; }
+.tt-btn { min-width: 48px; min-height: 44px; border-radius: 8px; border: 1.5px dashed var(--amber-dark); background: var(--bg); font-family: var(--mono); font-weight: 700; font-size: 16px; color: var(--ink); cursor: pointer; }
+.tt-btn.set { border-style: solid; border-color: var(--teal); background: #fff; }
+tr.tt-wrong td { background: var(--nudge-bg); }
 </style>
 </head>
 <body>
@@ -624,6 +646,11 @@ var CHAPTERS = [
     id: "ch12", part: "D", num: 12, emoji: "🧰",
     title: "Chief Engineer's Toolkit",
     subtitle: "All 8 tools, tool-detective practice, and the final ladder"
+  },
+  {
+    id: "ch13", part: "E", num: 13, emoji: "🚪",
+    title: "Watertight Door Gates",
+    subtitle: "Bridge switches, signal lamps and the truth table"
   }
 ];
 
@@ -701,14 +728,15 @@ var PARTS = [
   { key: "A", title: "PART A &middot; Boiler Room Basics", sub: "Counting foundations — before any formula.", boss: BOSS1 },
   { key: "B", title: "PART B &middot; Engine Design Choices", sub: "Addition, Multiplication, Permutations &amp; Combinations.", boss: BOSS2 },
   { key: "C", title: "PART C &middot; Blueprint Restrictions", sub: "Restrictions, Complementary Counting &amp; Recursion.", boss: BOSS3 },
-  { key: "D", title: "PART D &middot; Chief Engineer's Toolkit", sub: "All 8 tools together — the final checkpoint.", boss: BOSS4 }
+  { key: "D", title: "PART D &middot; Chief Engineer's Toolkit", sub: "All 8 tools together — the final checkpoint.", boss: BOSS4 },
+  { key: "E", title: "PART E &middot; Unseen Lab (bonus wing)", sub: "Exam-style stories: the rules arrive inside the problem.", boss: null, bonus: true }
 ];
 var LOCKED_PARTS = [];
 
 function chapterProgressStats() {
-  var done = 0, total = CHAPTERS.length + PARTS.length;
-  CHAPTERS.forEach(function (c) { if (getChapterState(c.id).done) done++; });
-  PARTS.forEach(function (p) { if (getChapterState(p.boss.id).done) done++; });
+  var done = 0, total = 0;
+  CHAPTERS.forEach(function (c) { if (c.part === "E") return; total++; if (getChapterState(c.id).done) done++; });   // Part E is a bonus wing: not in the main bar
+  PARTS.forEach(function (p) { if (!p.boss) return; total++; if (getChapterState(p.boss.id).done) done++; });
   return { done: done, total: total };
 }
 
@@ -730,6 +758,7 @@ function renderPartSection(part) {
     html += '</div>';
   });
 
+  if (!part.boss) { html += '</div></div>'; return html; }
   var bossSt = getChapterState(part.boss.id);
   var allChDone = chapters.every(function (c) { return getChapterState(c.id).done; });
   html += '<div class="mission-card' + (allChDone ? '' : ' locked') + '">';
@@ -1247,8 +1276,17 @@ function guidedExplanationWidget(containerId, chId, stageIdx, tokens) {
 
 /* ---------- Progressive hint widget (stacking hints, last level always states the answer) ---------- */
 /* levels: array of { label: '💡 Hint 1', html: '...' } */
+var stageHintFn = null;   // set by the current stage's hint widget; the global hint button calls it
 function progressiveHintWidget(containerId, chId, levels) {
   var shown = 0;
+  function advance() {
+    if (shown >= levels.length || !document.getElementById(containerId)) return false;
+    if (shown > 0) useHint(chId);
+    shown++;
+    draw();
+    return true;
+  }
+  stageHintFn = advance;
   function draw() {
     var html = "";
     for (var i = 0; i < shown; i++) {
@@ -1259,11 +1297,7 @@ function progressiveHintWidget(containerId, chId, levels) {
     }
     document.getElementById(containerId).innerHTML = html;
     var btn = document.getElementById(containerId + "-next");
-    if (btn) btn.onclick = function () {
-      if (shown > 0) useHint(chId);
-      shown++;
-      draw();
-    };
+    if (btn) btn.onclick = function () { advance(); };
   }
   draw();
 }
@@ -2711,7 +2745,254 @@ function (chId, root) {
 }
 ];
 
-var CHAPTER_STAGES = { ch1: CH1_STAGES, ch2: CH2_STAGES, ch3: CH3_STAGES, ch4: CH4_STAGES, ch5: CH5_STAGES, ch6: CH6_STAGES, ch7: CH7_STAGES, ch8: CH8_STAGES, ch9: CH9_STAGES, ch10: CH10_STAGES, ch11: CH11_STAGES, ch12: CH12_STAGES };
+/* =========================================================
+   CHAPTER 13 — Watertight Door Gates  (Part E, bonus wing: "Unseen Lab")
+   Exam-style: the rules arrive inside the story. 1 = switch ON, 0 = OFF.
+   ========================================================= */
+
+function ov(x) { return '<span class="ovl">' + x + '</span>'; }   // a bar over a letter means NOT
+
+/* Stage 1 widget: a bridge switchboard. Tap the switches, watch three lamps.
+   Mission: light the OR lamp with every different setting (each new one is logged). */
+function switchboardWidget(containerId, onAllFound) {
+  var sw = { A: 0, B: 0 };
+  var found = { "1,0": false, "0,1": false, "1,1": false };
+  var order = ["1,0", "0,1", "1,1"];
+  var foundCount = 0, finished = false;
+
+  function lampHtml(name, lit, rule) {
+    return '<div class="gate-lamp' + (lit ? ' lit' : '') + '"><div class="gate-bulb">💡</div><div class="gate-name">' + name + '</div><div class="gate-rule">' + rule + '</div></div>';
+  }
+  function draw() {
+    var a = sw.A, b = sw.B;
+    var html = '<div class="sw-row">';
+    ["A", "B"].forEach(function (k) {
+      html += '<button class="sw-btn' + (sw[k] ? ' on' : '') + '" data-sw="' + k + '"><span class="sw-letter">Switch ' + k + '</span><span class="sw-val">' + sw[k] + '</span><span class="sw-state">' + (sw[k] ? "ON (flag up)" : "OFF (flag down)") + '</span></button>';
+    });
+    html += '</div><div class="gate-lamps">';
+    html += lampHtml("AND", a && b, "A · B<br>lit only if BOTH are 1");
+    html += lampHtml("OR", a || b, "A + B<br>lit if AT LEAST ONE is 1");
+    html += lampHtml("NOT A", !a, ov("A") + "<br>flips: lit if A is 0");
+    html += '</div>';
+    html += '<div class="lb-progress" style="margin-top:12px">OR lamp settings found: ' + foundCount + ' / 3</div>';
+    html += '<div class="lb-grid" style="grid-template-columns:repeat(3,1fr)">';
+    order.forEach(function (key) {
+      var p = key.split(",");
+      html += '<div class="gl-cell' + (found[key] ? ' found' : '') + '">' + (found[key] ? ('A=' + p[0] + ', B=' + p[1]) : '?') + '</div>';
+    });
+    html += '</div>';
+    document.getElementById(containerId).innerHTML = html;
+    Array.prototype.forEach.call(document.getElementById(containerId).querySelectorAll(".sw-btn"), function (btn) {
+      btn.onclick = function () {
+        var k = btn.getAttribute("data-sw");
+        sw[k] = sw[k] ? 0 : 1;
+        var key = sw.A + "," + sw.B;
+        if ((sw.A || sw.B) && found[key] === false) { found[key] = true; foundCount++; }
+        draw();
+        if (foundCount === 3 && !finished) { finished = true; if (onAllFound) onAllFound(); }
+      };
+    });
+  }
+  draw();
+}
+
+/* Stage 3 widget: fill the lamp column of a truth table. Helper columns are shown; tap a ? to cycle 0 / 1. */
+function truthTableWidget(containerId, rows, helpers, finalHtml, finalFn, onSolved) {
+  var vals = rows.map(function () { return null; });
+  var wrong = {};
+  function draw(msg, kind) {
+    var html = '<table class="grid-table tt"><thead><tr><th>A</th><th>B</th><th>C</th>';
+    helpers.forEach(function (h) { html += '<th class="tt-help">' + h.label + '</th>'; });
+    html += '<th>' + finalHtml + '</th></tr></thead><tbody>';
+    rows.forEach(function (r, i) {
+      html += '<tr' + (wrong[i] ? ' class="tt-wrong"' : '') + '><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td>';
+      helpers.forEach(function (h) { html += '<td class="tt-help">' + h.fn(r[0], r[1], r[2]) + '</td>'; });
+      html += '<td><button class="tt-btn' + (vals[i] === null ? '' : ' set') + '" data-row="' + i + '">' + (vals[i] === null ? '?' : vals[i]) + '</button></td></tr>';
+    });
+    html += '</tbody></table>';
+    html += '<button class="btn primary small" id="' + containerId + '-check" style="margin-top:12px">Check my table</button>';
+    html += '<div class="feedback' + (msg ? ' show ' + kind : '') + '" id="' + containerId + '-fb">' + (msg || '') + '</div>';
+    document.getElementById(containerId).innerHTML = html;
+    Array.prototype.forEach.call(document.getElementById(containerId).querySelectorAll(".tt-btn"), function (btn) {
+      btn.onclick = function () {
+        var i = parseInt(btn.getAttribute("data-row"), 10);
+        vals[i] = (vals[i] === null) ? 0 : (vals[i] ? 0 : 1);
+        wrong = {};
+        draw();
+      };
+    });
+    document.getElementById(containerId + "-check").onclick = check;
+  }
+  function check() {
+    var empty = vals.filter(function (v) { return v === null; }).length;
+    if (empty) { wrong = {}; draw("Tap every ? first (" + empty + " left), then check.", "no"); return; }
+    var bad = 0; wrong = {};
+    rows.forEach(function (r, i) { if (vals[i] !== finalFn(r[0], r[1], r[2])) { wrong[i] = true; bad++; } });
+    if (bad) { draw(bad + " row" + (bad === 1 ? " needs" : "s need") + " another look (shaded). Do the helper columns first, then combine them.", "no"); }
+    else { draw("✅ Every row is right. Nice work.", "ok"); if (onSolved) onSolved(); }
+  }
+  draw();
+}
+
+var CH13_STAGES = [
+/* Stage 0: Visual Model */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
+  html += '<div class="concept-title">🚪 The Bridge Switchboard</div>';
+  html += '<div class="concept-body">';
+  html += '<p>On the bridge, officers control lamps with <strong>switches</strong>. A switch is either <strong>ON = 1</strong> (flag up) or <strong>OFF = 0</strong> (flag down). Three kinds of gate decide when a lamp lights.</p>';
+  html += '<p style="margin-top:10px"><strong>Mission:</strong> tap the switches and watch the lamps. Light the <strong>OR</strong> lamp using <strong>every different setting</strong> you can find. Each new one is logged below.</p>';
+  html += '<div id="ch13-s0-board"></div>';
+  html += '<div class="callout" id="ch13-s0-msg" style="display:none;margin-top:12px"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  switchboardWidget("ch13-s0-board", function () {
+    var m = document.getElementById("ch13-s0-msg");
+    m.style.display = "block";
+    m.innerHTML = '📌 <strong>AND</strong> needs both switches at 1. <strong>OR</strong> needs at least one. <strong>NOT</strong> flips a single switch (a bar over a letter, like ' + ov("A") + ', means NOT A). In an exam story these rules are always explained for you, so read them carefully and use them exactly.';
+    markStageDone(chId, 0);
+  });
+},
+
+/* Stage 1: Mental Strategy */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
+  html += '<div class="concept-title">📋 Every Setting, Nothing Missed</div>';
+  html += '<div class="concept-body">';
+  html += '<p>To study a circuit, an engineer lists <strong>every possible setting</strong> of the switches. That list is called a <strong>truth table</strong>. Each switch is a flag: 1 = up, 0 = down.</p>';
+  html += '<p style="margin-top:10px">Build every setting of <strong>3 switches</strong> (A, B, C). Repeats are allowed, since two switches can both be 1.</p>';
+  html += '<div id="ch13-s1-list"></div>';
+  html += '<div class="callout" id="ch13-s1-summary" style="display:none;margin-top:12px"></div>';
+  html += '<div id="ch13-s1-q" style="display:none;margin-top:14px">';
+  html += '<p>A bigger control panel has <strong>4 switches</strong>. How many rows would its truth table need?</p>';
+  html += '<div id="ch13-s1-hints"></div><div id="ch13-s1-check" style="margin-top:12px"></div></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  listBuilderWidget("ch13-s1-list", ["0", "1"], 3, "seq", chId, function (n) {
+    var s = document.getElementById("ch13-s1-summary");
+    s.style.display = "block";
+    s.innerHTML = '📌 You found <strong>' + n + '</strong> settings. Strategy: list them in <strong>counting order</strong> (the last switch changes fastest), and nothing gets skipped or doubled.';
+    document.getElementById("ch13-s1-q").style.display = "block";
+    progressiveHintWidget("ch13-s1-hints", chId, [
+      { label: "💡 Hint 1", html: "Think about what one extra switch does to the list. Each old setting can now be paired with the new switch ON, or with the new switch OFF." },
+      { label: "💡 Hint 2", html: "So adding a switch <strong>doubles</strong> the number of settings. You just found the number for 3 switches. Double it once." },
+      { label: "💡 Hint 3: full answer", html: "8 &times; 2 = <strong>16</strong>. (Or 2 &times; 2 &times; 2 &times; 2.) Type 16 below." }
+    ]);
+    answerCheckWidget("ch13-s1-check", 16, function () { markStageDone(chId, 1); });
+  });
+},
+
+/* Stage 2: General Rule */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
+  html += '<div class="concept-title">💡 Work Inside Out</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The door-closer lamp is wired as <strong>L = (A · B) + ' + ov("C") + '</strong>. To evaluate a circuit, <strong>work from the inside out</strong>: first the NOT and the AND (the small parts), then the OR that joins them.</p>';
+  html += '<div class="callout engineer" style="margin-top:10px">Worked row: <strong>A=1, B=0, C=1</strong>.<br>A · B = 0 (not both are 1).<br>' + ov("C") + ' = 0 (C is 1, so NOT flips it).<br>Then 0 + 0 = <strong>0</strong>, so the lamp is dark.</div>';
+  html += '<p style="margin-top:12px">Now fill in the <strong>L</strong> column for all 8 rows. Tap a <strong>?</strong> to set it to 0 or 1. The two helper columns are done for you.</p>';
+  html += '<div id="ch13-s2-table"></div>';
+  html += '<div id="ch13-s2-tablehints"></div>';
+  html += '<div id="ch13-s2-q" style="display:none;margin-top:16px">';
+  html += '<p>Now look at your finished table. For how many of the 8 rows is the lamp <strong>lit</strong> (L = 1)?</p>';
+  html += '<div id="ch13-s2-hints"></div><div id="ch13-s2-check" style="margin-top:12px"></div></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  var rows = kSequences([1, 0], 3);
+  var AND = function (x, y) { return (x && y) ? 1 : 0; }, OR = function (x, y) { return (x || y) ? 1 : 0; }, NOT = function (x) { return x ? 0 : 1; };
+  progressiveHintWidget("ch13-s2-tablehints", chId, [
+    { label: "💡 Hint 1", html: "Use the helper columns. L is lit when <strong>either</strong> helper is 1." },
+    { label: "💡 Hint 2", html: "A row is dark only when <strong>both</strong> helpers are 0: that needs C = 1 <em>and</em> A · B = 0." },
+    { label: "💡 Hint 3: the dark rows", html: "The dark rows are <strong>101, 011 and 001</strong>. Every other row is lit." }
+  ]);
+  truthTableWidget("ch13-s2-table", rows,
+    [{ label: "A · B", fn: AND }, { label: ov("C"), fn: function (x, y, z) { return NOT(z); } }],
+    "L",
+    function (x, y, z) { return OR(AND(x, y), NOT(z)); },
+    function () {
+      document.getElementById("ch13-s2-q").style.display = "block";
+      progressiveHintWidget("ch13-s2-hints", chId, [
+        { label: "💡 Hint 1", html: "Count the 1s down your L column. Cross each off as you go." },
+        { label: "💡 Hint 2", html: "Rows with C = 0 are always lit (4 rows). Rows with C = 1 are lit only when A · B = 1." },
+        { label: "💡 Hint 3: full answer", html: "4 rows (C = 0) + 1 row (A = B = C = 1) = <strong>5</strong>. Type 5 below." }
+      ]);
+      answerCheckWidget("ch13-s2-check", 5, function () { markStageDone(chId, 2); });
+    });
+},
+
+/* Stage 3: Why It Works */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
+  html += '<div class="concept-title">🔍 Why Every Setting Appears Exactly Once</div>';
+  html += '<div class="concept-body">';
+  html += '<p>Here are just <strong>two</strong> switches as a decision tree. Switch A has two positions; whichever it takes, switch B again has two.</p>';
+  html += '<div class="svg-box">' + buildTreeSVG("Start", ["A = 1", "A = 0"], { "A = 1": ["B = 1", "B = 0"], "A = 0": ["B = 1", "B = 0"] }, 420) + '</div>';
+  html += '<p>Each path from Start to the end is one setting, and no setting can appear twice. This is the Multiplication Principle from Chapter 6 again. Build the explanation:</p>';
+  html += '<div id="ch13-s3-guided"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  guidedExplanationWidget("ch13-s3-guided", chId, 3, [
+    { t: "text", v: "A truth table has no missing or repeated rows because each switch has " },
+    { t: "blank", options: ["exactly two positions, ON or OFF", "just two states", "two choices"] },
+    { t: "text", v: ", and the choices " },
+    { t: "blank", options: ["multiply, so 3 switches give 2 × 2 × 2 = 8 rows", "multiply together: 2 × 2 × 2 = 8 rows", "are multiplied, giving 2 × 2 × 2 = 8"] },
+    { t: "text", v: "." }
+  ]);
+},
+
+/* Stage 4: Competition Challenge */
+function (chId, root) {
+  var html = '';
+  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
+  html += '<div class="concept-title">🏆 Cambridge Question</div>';
+  html += '<div class="concept-body">';
+  html += '<p>The bridge has three switches A, B, C (1 = ON, 0 = OFF). Rules: <strong>AND</strong> (·) is 1 only if both are 1. <strong>OR</strong> (+) is 1 if at least one is 1. A bar flips a value. The door-closer lamp is <strong>M = (A + B) · ' + ov("C") + '</strong>.</p>';
+  html += '<p style="margin-top:10px"><strong>(a)</strong> Set A = 0, B = 1, C = 0. Type <strong>1</strong> if M is lit, or <strong>0</strong> if it is dark.</p>';
+  html += '<div id="ch13-s4-ha"></div><div id="ch13-s4-a"></div>';
+  html += '<div id="ch13-s4-bq" style="display:none;margin-top:14px"><p><strong>(b)</strong> For how many of the 8 possible settings is M lit?</p><div id="ch13-s4-hb"></div><div id="ch13-s4-b"></div></div>';
+  html += '<div id="ch13-s4-cq" style="display:none;margin-top:14px"><p><strong>(c)</strong> Dr Pisit claims the lamps <strong>P = A · (B + C)</strong> and <strong>Q = (A · B) + (A · C)</strong> always agree. For how many of the 8 settings do P and Q show the <strong>same</strong> result?</p><div id="ch13-s4-hc"></div><div id="ch13-s4-c"></div></div>';
+  html += '<div class="callout" id="ch13-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> In the Warp Zone castle, a door has 3 switches. The builder may decide, <strong>independently for each of the 8 settings</strong>, whether the door opens or stays shut. How many different door rules are possible?</div>';
+  html += '<div id="ch13-s4-hs" style="display:none"></div><div id="ch13-s4-s" style="display:none"></div>';
+  html += '</div>';
+  root.innerHTML = html;
+  progressiveHintWidget("ch13-s4-ha", chId, [
+    { label: "💡 Hint 1", html: "Work inside out: first A + B, then " + ov("C") + ", then join them with AND." },
+    { label: "💡 Hint 2: full answer", html: "A + B = 0 + 1 = 1. " + ov("C") + " = 1 (C is 0). Then 1 · 1 = <strong>1</strong>. Type 1." }
+  ]);
+  answerCheckWidget("ch13-s4-a", 1, function () {
+    document.getElementById("ch13-s4-bq").style.display = "block";
+    progressiveHintWidget("ch13-s4-hb", chId, [
+      { label: "💡 Hint 1", html: "M needs two things at once: A + B = 1 <em>and</em> " + ov("C") + " = 1. What does " + ov("C") + " = 1 say about C?" },
+      { label: "💡 Hint 2", html: "C must be 0. Then A and B can be anything except both 0. How many (A, B) pairs is that?" },
+      { label: "💡 Hint 3: full answer", html: "Of the 4 pairs for (A, B), only (0, 0) fails, so 3 pairs work. C is fixed at 0. The answer is <strong>3</strong>. Type 3." }
+    ]);
+    answerCheckWidget("ch13-s4-b", 3, function () {
+      document.getElementById("ch13-s4-cq").style.display = "block";
+      progressiveHintWidget("ch13-s4-hc", chId, [
+        { label: "💡 Hint 1", html: "Try it on a few rows, such as A=1, B=1, C=0 and A=0, B=1, C=1, and see whether P and Q ever differ." },
+        { label: "💡 Hint 2", html: "When A = 0, both P and Q are 0. When A = 1, P becomes B + C and Q becomes B + C too." },
+        { label: "💡 Hint 3: full answer", html: "They agree on every row, so the answer is <strong>8</strong>. Type 8." }
+      ]);
+      answerCheckWidget("ch13-s4-c", 8, function () {
+        document.getElementById("ch13-s4-stretch").style.display = "block";
+        document.getElementById("ch13-s4-hs").style.display = "block";
+        document.getElementById("ch13-s4-s").style.display = "block";
+        progressiveHintWidget("ch13-s4-hs", chId, [
+          { label: "💡 Hint 1", html: "Each of the 8 settings is one decision with 2 outcomes: open or shut." },
+          { label: "💡 Hint 2", html: "8 independent decisions with 2 choices each. Use the Multiplication Principle." },
+          { label: "💡 Hint 3: full answer", html: "2 &times; 2 &times; &hellip; (8 times) = 2<sup>8</sup> = <strong>256</strong>. Type 256." }
+        ]);
+        answerCheckWidget("ch13-s4-s", 256, function () { markStageDone(chId, 4); });
+      });
+    });
+  });
+}
+];
+
+var CHAPTER_STAGES = { ch13: CH13_STAGES, ch1: CH1_STAGES, ch2: CH2_STAGES, ch3: CH3_STAGES, ch4: CH4_STAGES, ch5: CH5_STAGES, ch6: CH6_STAGES, ch7: CH7_STAGES, ch8: CH8_STAGES, ch9: CH9_STAGES, ch10: CH10_STAGES, ch11: CH11_STAGES, ch12: CH12_STAGES };
 var CHAPTER_META = {};
 CHAPTERS.forEach(function (c) { CHAPTER_META[c.id] = c; });
 
@@ -2780,10 +3061,13 @@ function renderChapter(chId, stageIdx) {
 
   document.getElementById("app").innerHTML = html;
   var contentEl = document.getElementById("stage-content");
+  stageHintFn = null;
   CHAPTER_STAGES[chId][stageIdx](chId, contentEl);
 }
 
 function hintCurrentChapter(chId) {
+  if (stageHintFn && stageHintFn()) return;   // reveal the stage's next hint in place (no re-render)
+  if (stageHintFn) return;                    // all hints already shown: nothing more to cost
   useHint(chId);
   render();
 }
@@ -3102,6 +3386,7 @@ function renderMasterMap() {
   html += '</div></div>';
 
   PARTS.forEach(function (part) {
+    if (part.bonus) return;
     var chapters = CHAPTERS.filter(function (c) { return c.part === part.key; });
     var html2 = '<div class="section"><div class="part-header">' + part.title + '</div>';
     html2 += '<div class="missions">';
