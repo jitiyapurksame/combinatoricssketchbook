@@ -149,6 +149,23 @@ button { cursor: pointer; }
 .lb-current { font-family: var(--mono); font-size: 13px; margin-top: 8px; display: flex; align-items: center; gap: 8px; }
 .lb-current strong { color: var(--teal); font-size: 15px; }
 
+/* ---- Pool-shrink dot visual ---- */
+.pool-steps { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
+.pool-step { text-align: center; min-width: 74px; }
+.pool-step-label { font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; line-height: 1.4; }
+.pool-dots { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; max-width: 110px; margin: 0 auto; }
+.pool-dot {
+  width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.pool-used-row { display: flex; gap: 3px; justify-content: center; margin-top: 6px; min-height: 16px; }
+.pool-used-dot {
+  width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 8px; font-weight: 700; color: #fff; opacity: 0.35;
+}
+.pool-arrow-col { text-align: center; font-size: 15px; color: var(--amber-dark); }
+.pool-arrow-label { font-family: var(--mono); font-size: 9px; color: var(--coral); margin-top: 2px; white-space: nowrap; }
+
 /* ---- List builder ---- */
 .list-builder { margin-top: 12px; }
 .lb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px,1fr)); gap: 8px; margin-top: 10px; }
@@ -231,6 +248,14 @@ textarea.note {
 
 .foot-note { margin: 18px 16px 0; font-size: 11px; color: var(--ink-soft); text-align: center; line-height: 1.6; }
 .foot-note code { font-family: var(--mono); background: var(--card); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(14,42,69,0.1); }
+.code-box { font-family: var(--mono); font-weight: 700; font-size: 15px; letter-spacing: 0.04em; line-height: 1.6; text-align: center; word-break: break-all; background: var(--bg); border: 2px dashed var(--amber-dark); border-radius: 10px; padding: 14px 10px; color: var(--teal); user-select: all; -webkit-user-select: all; }
+.log-btns { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.log-btns .btn { flex: 1; min-width: 130px; min-height: 44px; }
+#sl-copy, #sl-check, #sl-undo, #sl-apply, #sl-cancel, #sl-save, #sl-load { min-height: 44px; }
+.okbox { background: var(--success-bg); border: 1px solid rgba(63,163,122,0.4); color: #1e5c40; border-radius: 10px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; }
+.warnbox { background: var(--nudge-bg); border: 1px solid rgba(179,130,44,0.5); color: var(--nudge-ink); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; }
+.backup-nudge { display: flex; align-items: center; gap: 10px; background: var(--nudge-bg); border: 1px dashed var(--amber-dark); color: var(--nudge-ink); border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.4; margin-bottom: 10px; }
+.backup-nudge .btn { flex: none; min-height: 44px; }
 </style>
 </head>
 <body>
@@ -306,27 +331,201 @@ function climbCompositions(n) {
    STORAGE
    ========================================================= */
 
+// ==BACKUP-CORE-START==
+// Pure helpers (no page/DOM use) so verify.js can test them: safe loading, Restore Code, merge, backup bundle.
+var CH_IDS = ["ch1","ch2","ch3","ch4","ch5","ch6","ch7","ch8","ch9","ch10","ch11","ch12"];
+var BOSS_IDS = ["boss1","boss2","boss3","boss4"];
+var CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";   // no I, L, O, U: nothing to mix up
+var CODE_VERSION = 1;
+var CODE_PREFIX = "CSK";
+var CODE_CHARS = 28;                                      // 140 bits = 5 version + 108 progress + 7 spare + 16 CRC + 4 pad
+
+function normalizeChapter(c) {
+  var out = { stage: 0, stars: 3, done: false, stageDone: [false,false,false,false,false] };
+  if (!c || typeof c !== "object") return out;
+  var sd = Array.isArray(c.stageDone) ? c.stageDone : [];
+  for (var i = 0; i < 5; i++) out.stageDone[i] = sd[i] === true;
+  var stars = Number(c.stars);
+  out.stars = (stars >= 1 && stars <= 3) ? Math.floor(stars) : 3;
+  var stage = Number(c.stage);
+  out.stage = (stage >= 0 && stage <= 4) ? Math.floor(stage) : 0;
+  out.done = c.done === true || out.stageDone[4] === true;
+  if (out.done) out.stageDone[4] = true;
+  return out;
+}
+// Any saved object -> a well-formed progress object. Saved values always win; junk is replaced by defaults.
+function normalizeProgress(p) {
+  var out = { chapters: {}, xp: 0, drawMemory: {} };
+  if (!p || typeof p !== "object" || Array.isArray(p)) return out;
+  var xp = Number(p.xp);
+  out.xp = (isFinite(xp) && xp >= 0) ? Math.floor(xp) : 0;
+  if (p.chapters && typeof p.chapters === "object" && !Array.isArray(p.chapters)) {
+    Object.keys(p.chapters).forEach(function (id) { out.chapters[id] = normalizeChapter(p.chapters[id]); });
+  }
+  if (p.drawMemory && typeof p.drawMemory === "object" && !Array.isArray(p.drawMemory)) {
+    Object.keys(p.drawMemory).forEach(function (id) { if (p.drawMemory[id] === true) out.drawMemory[id] = true; });
+  }
+  return out;
+}
+function normalizeErrorLog(list) {
+  var out = [];
+  if (!Array.isArray(list)) return out;
+  list.forEach(function (e) {
+    if (e && typeof e === "object" && typeof e.code === "string" && typeof e.note === "string") {
+      out.push({ code: e.code, note: e.note, ts: isFinite(Number(e.ts)) ? Number(e.ts) : 0 });
+    }
+  });
+  return out;
+}
+// How many stages are finished (60 chapter stages + 4 boss clears = 64 max)
+function countStages(p) {
+  var n = 0; p = normalizeProgress(p);
+  CH_IDS.forEach(function (id) { var c = p.chapters[id]; if (c) c.stageDone.forEach(function (d) { if (d) n++; }); });
+  BOSS_IDS.forEach(function (id) { var c = p.chapters[id]; if (c && c.done) n++; });
+  return n;
+}
+function crc16(bytes) {
+  var crc = 0xFFFF;
+  for (var k = 0; k < bytes.length; k++) {
+    crc ^= (bytes[k] << 8);
+    for (var i = 0; i < 8; i++) crc = (crc & 0x8000) ? (((crc << 1) ^ 0x1021) & 0xFFFF) : ((crc << 1) & 0xFFFF);
+  }
+  return crc;
+}
+function xpFor(stars) { return 20 + stars * 5; }
+// progress -> "CSK-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+function encodeRestoreCode(progress) {
+  var p = normalizeProgress(progress), bits = [], i, j;
+  for (var v = 4; v >= 0; v--) bits.push((CODE_VERSION >> v) & 1);
+  CH_IDS.forEach(function (id) { var c = p.chapters[id] || normalizeChapter(null); for (i = 0; i < 5; i++) bits.push(c.stageDone[i] ? 1 : 0); });
+  BOSS_IDS.forEach(function (id) { var c = p.chapters[id]; bits.push(c && c.done ? 1 : 0); });
+  CH_IDS.concat(BOSS_IDS).forEach(function (id) {
+    var c = p.chapters[id], s = c ? c.stars : 3;          // 2 bits: stars-1 (0..2)
+    bits.push(((s - 1) >> 1) & 1, (s - 1) & 1);
+  });
+  CH_IDS.forEach(function (id) { bits.push(p.drawMemory[id] ? 1 : 0); });
+  while (bits.length < 120) bits.push(0);
+  var bytes = [];
+  for (i = 0; i < 120; i += 8) { var b = 0; for (j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; bytes.push(b); }
+  var crc = crc16(bytes); bytes.push(crc >> 8, crc & 255);
+  var all = [];
+  bytes.forEach(function (b) { for (var q = 7; q >= 0; q--) all.push((b >> q) & 1); });
+  while (all.length % 5) all.push(0);
+  var chars = "";
+  for (i = 0; i < all.length; i += 5) { var n = 0; for (j = 0; j < 5; j++) n = (n << 1) | all[i + j]; chars += CODE_ALPHABET[n]; }
+  return CODE_PREFIX + "-" + chars.match(/.{4}/g).join("-");
+}
+// text -> {ok:true, progress} (a progress-shaped object, XP recomputed) or {ok:false, reason}
+function decodeRestoreCode(text) {
+  var t = String(text == null ? "" : text).toUpperCase().replace(/[\s\-_]/g, "");
+  if (t.length === CODE_CHARS + 3 && t.slice(0, 3) === CODE_PREFIX) t = t.slice(3);
+  t = t.replace(/O/g, "0").replace(/[IL]/g, "1");
+  if (t.length !== CODE_CHARS) return { ok: false, reason: "length" };
+  var all = [], i, j;
+  for (i = 0; i < t.length; i++) {
+    var n = CODE_ALPHABET.indexOf(t.charAt(i));
+    if (n < 0) return { ok: false, reason: "chars" };
+    for (j = 4; j >= 0; j--) all.push((n >> j) & 1);
+  }
+  for (i = 136; i < 140; i++) if (all[i] !== 0) return { ok: false, reason: "checksum" };
+  var bytes = [];
+  for (i = 0; i < 136; i += 8) { var b = 0; for (j = 0; j < 8; j++) b = (b << 1) | all[i + j]; bytes.push(b); }
+  var data = bytes.slice(0, 15), crc = (bytes[15] << 8) | bytes[16];
+  if (crc16(data) !== crc) return { ok: false, reason: "checksum" };
+  var bits = [];
+  data.forEach(function (x) { for (var q = 7; q >= 0; q--) bits.push((x >> q) & 1); });
+  var version = 0; for (i = 0; i < 5; i++) version = (version << 1) | bits[i];
+  if (version !== CODE_VERSION) return { ok: false, reason: "version" };
+  var pos = 5, prog = { chapters: {}, xp: 0, drawMemory: {} };
+  CH_IDS.forEach(function (id) {
+    var c = normalizeChapter(null);
+    for (var k = 0; k < 5; k++) c.stageDone[k] = bits[pos++] === 1;
+    c.done = c.stageDone[4];
+    prog.chapters[id] = c;
+  });
+  BOSS_IDS.forEach(function (id) {
+    var c = normalizeChapter(null); c.done = bits[pos++] === 1; c.stageDone[4] = c.done; prog.chapters[id] = c;
+  });
+  CH_IDS.concat(BOSS_IDS).forEach(function (id) {
+    var s = ((bits[pos] << 1) | bits[pos + 1]) + 1; pos += 2;
+    prog.chapters[id].stars = s > 3 ? 3 : s;
+  });
+  CH_IDS.forEach(function (id) { if (bits[pos++] === 1) prog.drawMemory[id] = true; });
+  CH_IDS.concat(BOSS_IDS).forEach(function (id) {
+    var c = prog.chapters[id];
+    for (var k = 4; k >= 0; k--) if (c.stageDone[k]) { c.stage = Math.min(4, k + 1); break; }
+    if (c.done) prog.xp += xpFor(c.stars);
+  });
+  return { ok: true, progress: prog };
+}
+// Adding progress never takes progress away: a stage is done if EITHER side has it; stars and XP keep the higher value.
+function mergeProgress(current, incoming) {
+  var a = normalizeProgress(current), b = normalizeProgress(incoming), out = normalizeProgress(a);
+  Object.keys(b.chapters).forEach(function (id) {
+    var bc = b.chapters[id], ac = a.chapters[id];
+    var bHas = bc.stageDone.some(function (d) { return d; }), aHas = ac && ac.stageDone.some(function (d) { return d; });
+    var oc = ac ? out.chapters[id] : (out.chapters[id] = normalizeChapter(null));
+    for (var i = 0; i < 5; i++) oc.stageDone[i] = oc.stageDone[i] || bc.stageDone[i];
+    oc.done = oc.done || bc.done || oc.stageDone[4];
+    if (oc.done) oc.stageDone[4] = true;
+    if (bHas) oc.stars = aHas ? Math.max(ac.stars, bc.stars) : bc.stars;
+    var hi = 0; for (var k = 4; k >= 0; k--) if (oc.stageDone[k]) { hi = Math.min(4, k + 1); break; }
+    oc.stage = Math.max(oc.stage, bc.stage, hi);
+  });
+  Object.keys(out.chapters).forEach(function (id) {       // unlock every stage that is already finished
+    var oc = out.chapters[id];
+    for (var k = 4; k >= 0; k--) if (oc.stageDone[k]) { oc.stage = Math.max(oc.stage, Math.min(4, k + 1)); break; }
+  });
+  Object.keys(b.drawMemory).forEach(function (id) { out.drawMemory[id] = true; });
+  out.xp = Math.max(a.xp, b.xp);
+  return out;
+}
+function mergeErrorLogs(current, incoming) {
+  var a = normalizeErrorLog(current), b = normalizeErrorLog(incoming), seen = {}, out = [];
+  a.concat(b).forEach(function (e) { var key = e.ts + "|" + e.code + "|" + e.note; if (!seen[key]) { seen[key] = true; out.push(e); } });
+  out.sort(function (x, y) { return x.ts - y.ts; });
+  return out;
+}
+// A gentle reminder: only after 5 or more new finished stages since the last backup (never by calendar, never red).
+function backupDue(stagesNow, meta) {
+  var last = meta && isFinite(Number(meta.stages)) ? Number(meta.stages) : 0;
+  return stagesNow - last >= 5;
+}
+function buildBundle(progress, errorLog, whenISO) {
+  var p = normalizeProgress(progress);
+  return JSON.stringify({ app: "jj-combinatorics-backup", version: 1, exportedAt: whenISO,
+    code: encodeRestoreCode(p), progress: p, errorLog: normalizeErrorLog(errorLog) }, null, 2);
+}
+// Reads and cleans a backup file. Returns {ok, progress, errorLog, exportedAt} or {ok:false, reason}
+function readBundle(text) {
+  var parsed;
+  try { parsed = JSON.parse(text); } catch (e) { return { ok: false, reason: "json" }; }
+  if (!parsed || typeof parsed !== "object" || parsed.app !== "jj-combinatorics-backup" || !parsed.progress || typeof parsed.progress !== "object") return { ok: false, reason: "shape" };
+  var prog = normalizeProgress(parsed.progress);
+  var log = normalizeErrorLog(parsed.errorLog);
+  if (countStages(prog) === 0 && log.length === 0 && prog.xp === 0) return { ok: false, reason: "empty" };
+  return { ok: true, progress: prog, errorLog: log, exportedAt: typeof parsed.exportedAt === "string" ? parsed.exportedAt : null };
+}
+// ==BACKUP-CORE-END==
+
 var STORE_KEY = "cs_progress_v1";
 var ERR_KEY = "cs_errorlog_v1";
+var META_KEY = "cs_backup_meta_v1";        // {stages, at}: what was backed up last (never touches progress)
+var SNAP_KEY = "cs_prerestore_v1";         // one undo snapshot, written just before a restore
 
-function loadProgress() {
-  try {
-    var raw = localStorage.getItem(STORE_KEY);
-    return raw ? JSON.parse(raw) : { chapters: {}, xp: 0, drawMemory: {} };
-  } catch (e) { return { chapters: {}, xp: 0, drawMemory: {} }; }
-}
-function saveProgress(p) {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(p)); } catch (e) {}
-}
-function loadErrorLog() {
-  try {
-    var raw = localStorage.getItem(ERR_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch (e) { return []; }
-}
-function saveErrorLog(list) {
-  try { localStorage.setItem(ERR_KEY, JSON.stringify(list)); } catch (e) {}
-}
+var storageOk = true;
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { storageOk = false; return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { storageOk = false; return false; } }
+function lsJson(k) { var raw = lsGet(k); if (!raw) return null; try { return JSON.parse(raw); } catch (e) { return null; } }
+(function () { try { localStorage.setItem("cs_probe", "1"); localStorage.removeItem("cs_probe"); } catch (e) { storageOk = false; } })();
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}   // ask the browser to keep our data
+
+function loadProgress() { return normalizeProgress(lsJson(STORE_KEY)); }
+function saveProgress(p) { lsSet(STORE_KEY, JSON.stringify(p)); }
+function loadErrorLog() { return normalizeErrorLog(lsJson(ERR_KEY)); }
+function saveErrorLog(list) { lsSet(ERR_KEY, JSON.stringify(list)); }
+function loadBackupMeta() { var m = lsJson(META_KEY); return (m && typeof m === "object") ? m : null; }
+function markBackedUp() { lsSet(META_KEY, JSON.stringify({ stages: countStages(PROGRESS), at: Date.now() })); }
 
 var PROGRESS = loadProgress();
 
@@ -346,6 +545,7 @@ function markStageDone(chId, stageIdx) {
   st.stageDone[stageIdx] = true;
   if (stageIdx === 4) { st.done = true; PROGRESS.xp = (PROGRESS.xp || 0) + 20 + (st.stars * 5); }
   saveProgress(PROGRESS);
+  refreshChapterNav();
 }
 
 /* =========================================================
@@ -580,7 +780,12 @@ function renderHome() {
   html += '</div></div>';
 
   html += '<div class="section">';
+  if (!storageOk) html += '<div class="warnbox" style="margin-bottom:10px"><strong>Progress can\u2019t be saved in this mode.</strong> Open the website in normal Safari.</div>';
+  if (backupDue(countStages(PROGRESS), loadBackupMeta())) {
+    html += '<div class="backup-nudge"><span>\uD83D\uDCD3 New stages since your last backup. Saving takes 30 seconds.</span><button class="btn small" onclick="CSApp.nav(\'shiplog\')">Save</button></div>';
+  }
   html += '<button class="btn" style="width:100%" onclick="CSApp.nav(\'errorlog\')">🔥 Open Error Log</button>';
+  html += '<button class="btn" style="width:100%;margin-top:10px" onclick="CSApp.nav(\'shiplog\')">\uD83D\uDCD3 Ship\u2019s Log: save &amp; restore</button>';
   html += '</div>';
 
   html += '<div class="foot-note">Progress saved on this device under <code>' + STORE_KEY + '</code>. Part of J.J.\'s Engineering Academy.</div>';
@@ -599,6 +804,67 @@ var STAGE_LABELS = ["Visual Model", "Mental Strategy", "General Rule", "Why It W
 /* ---------- Generic list-builder widget (tap-to-build, crossing-out method) ---------- */
 /* mode: 'combo' | 'perm' | 'seq'. chId used so the hint fallback costs a star, same as everywhere else. */
 var CHIP_COLORS = ["#C1503A", "#3FA37A", "#0E2A45", "#D9A441", "#8A5A18", "#5B6B78"];
+
+/* ---------- Pool-shrink dot visual (colored dots that physically disappear as roles get filled) ---------- */
+/* pool: full array of letters, e.g. ["A","B","C","D","E"]
+   pickedSequence: which letter is removed at each step, e.g. ["A","B"] (leaves the final remaining pool implicit)
+   roleLabels: labels for each step, e.g. ["Captain","First Officer","Second Officer"] */
+function poolShrinkVisualHtml(pool, pickedSequence, roleLabels) {
+  function colorFor(letter) { return CHIP_COLORS[pool.indexOf(letter) % CHIP_COLORS.length]; }
+  var html = '<div class="pool-steps">';
+  var removedSoFar = [];
+  for (var step = 0; step < roleLabels.length; step++) {
+    var available = pool.filter(function (l) { return removedSoFar.indexOf(l) === -1; });
+    html += '<div class="pool-step">';
+    html += '<div class="pool-step-label">' + roleLabels[step].toUpperCase() + '<br>(' + available.length + ' available)</div>';
+    html += '<div class="pool-dots">';
+    available.forEach(function (l) { html += '<div class="pool-dot" style="background:' + colorFor(l) + '">' + l + '</div>'; });
+    html += '</div>';
+    html += '<div class="pool-used-row">';
+    removedSoFar.forEach(function (l) { html += '<div class="pool-used-dot" style="background:' + colorFor(l) + '">' + l + '</div>'; });
+    html += '</div>';
+    html += '</div>';
+    if (step < roleLabels.length - 1) {
+      var picked = pickedSequence[step];
+      html += '<div class="pool-arrow-col">→<div class="pool-arrow-label">' + picked + ' picked</div></div>';
+      removedSoFar.push(picked);
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+/* ---------- Restricted-pool visual (all items as dots, restricted ones badged) ---------- */
+/* items: full array of labels. restricted: array of {item, note} for each restricted item. */
+function restrictedPoolVisualHtml(items, restricted) {
+  var restrictedMap = {};
+  restricted.forEach(function (r) { restrictedMap[r.item] = r.note; });
+  function colorFor(item) { return CHIP_COLORS[items.indexOf(item) % CHIP_COLORS.length]; }
+  var html = '<div class="pool-dots" style="max-width:none;gap:8px;margin-top:10px">';
+  items.forEach(function (it) {
+    var isRestricted = restrictedMap.hasOwnProperty(it);
+    html += '<div style="text-align:center">';
+    html += '<div class="pool-dot" style="background:' + colorFor(it) + ';width:32px;height:32px;font-size:13px;' + (isRestricted ? 'box-shadow:0 0 0 2.5px var(--coral)' : '') + '">' + it + '</div>';
+    if (isRestricted) html += '<div style="font-size:9px;font-family:var(--mono);color:var(--coral);margin-top:3px;max-width:60px">🚫 ' + restrictedMap[it] + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+/* ---------- Categorized-pool visual (two colored groups side by side) ---------- */
+function categorizedPoolVisualHtml(groupA, groupALabel, groupAColor, groupB, groupBLabel, groupBColor) {
+  var html = '<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:10px">';
+  [[groupA, groupALabel, groupAColor], [groupB, groupBLabel, groupBColor]].forEach(function (g) {
+    html += '<div style="text-align:center">';
+    html += '<div class="pool-step-label">' + g[1].toUpperCase() + ' (' + g[0].length + ')</div>';
+    html += '<div class="pool-dots">';
+    g[0].forEach(function (it) { html += '<div class="pool-dot" style="background:' + g[2] + '">' + it + '</div>'; });
+    html += '</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
 
 function listBuilderWidget(containerId, items, k, mode, chId, onAllFound) {
   var target = mode === 'combo' ? kCombinations(items, k) : (mode === 'perm' ? kPermutations(items, k) : kSequences(items, k));
@@ -977,6 +1243,29 @@ function guidedExplanationWidget(containerId, chId, stageIdx, tokens) {
   }
 
   drawGuided();
+}
+
+/* ---------- Progressive hint widget (stacking hints, last level always states the answer) ---------- */
+/* levels: array of { label: '💡 Hint 1', html: '...' } */
+function progressiveHintWidget(containerId, chId, levels) {
+  var shown = 0;
+  function draw() {
+    var html = "";
+    for (var i = 0; i < shown; i++) {
+      html += '<div class="callout engineer" style="margin-top:10px"><strong>' + levels[i].label + '</strong><br>' + levels[i].html + '</div>';
+    }
+    if (shown < levels.length) {
+      html += '<button class="btn small amber" id="' + containerId + '-next" style="margin-top:10px">' + (shown === 0 ? "💡 Need a hint?" : "💡 Next hint (uses a star)") + '</button>';
+    }
+    document.getElementById(containerId).innerHTML = html;
+    var btn = document.getElementById(containerId + "-next");
+    if (btn) btn.onclick = function () {
+      if (shown > 0) useHint(chId);
+      shown++;
+      draw();
+    };
+  }
+  draw();
 }
 
 /* ---------- Generic answer-check widget ---------- */
@@ -1783,11 +2072,13 @@ function (chId, root) {
   html += '<div class="concept-title">🔢 Watch the Pool Shrink</div>';
   html += '<div class="concept-body">';
   html += '<p>For Captain, all 5 officers were available. Once Captain was picked, only 4 remained for First Officer. Once that was picked, only 3 remained for Second Officer.</p>';
-  html += '<div class="callout engineer">5 &nbsp;→&nbsp; 4 &nbsp;→&nbsp; 3 &nbsp;&middot;&nbsp; each role\'s pool is one smaller than the last, because the last pick is used up.</div>';
+  html += '<div id="ch7-s1-visual"></div>';
+  html += '<div class="callout engineer" style="margin-top:14px">5 &nbsp;→&nbsp; 4 &nbsp;→&nbsp; 3 &nbsp;&middot;&nbsp; each role\'s pool is one smaller than the last, because the last pick is used up.</div>';
   html += '<p style="margin-top:12px">Multiply those three pool sizes together: how many total rosters are possible?</p>';
   html += '<div id="ch7-s1-check"></div>';
   html += '</div>';
   root.innerHTML = html;
+  document.getElementById("ch7-s1-visual").innerHTML = poolShrinkVisualHtml(["A","B","C","D","E"], ["A","B"], ["Captain","First Officer","Second Officer"]);
   answerCheckWidget("ch7-s1-check", 5*4*3, function () { markStageDone(chId, 1); });
 },
 
@@ -1886,11 +2177,23 @@ function (chId, root) {
   html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
   html += '<div class="concept-title">💡 Predict a Different Team Size</div>';
   html += '<div class="concept-body">';
-  html += '<p>Choosing 3 from 5 officers gives 10 unordered teams (60 ordered ÷ 3! = 60 ÷ 6 = 10). Now predict: choosing <strong>2</strong> officers from a pool of <strong>6</strong> (unordered) — how many teams?</p>';
-  html += '<div class="callout engineer">Hint: ordered pairs from 6 = 6×5 = 30. Each pair can be ordered 2! = 2 ways.</div>';
-  html += '<div id="ch8-s2-check"></div>';
+  html += '<p>First, here\'s exactly where Stage 2\'s numbers came from, laid out as a table:</p>';
+  html += '<table class="grid-table"><thead><tr><th>Scenario</th><th>Ordered picks</th><th>Orderings per team</th><th>Teams</th></tr></thead><tbody>';
+  html += '<tr><td>5 officers,<br>teams of 3</td><td>5×4×3<br>= 60</td><td>3! = 3×2×1<br>= 6</td><td>60 &divide; 6<br>= 10</td></tr>';
+  html += '<tr><td>6 officers,<br>teams of 2</td><td>?</td><td>?</td><td>?</td></tr>';
+  html += '</tbody></table>';
+  html += '<p style="margin-top:12px">Same 3 steps, new numbers. Fill in the bottom row yourself: choosing <strong>2</strong> officers from a pool of <strong>6</strong> (unordered) — how many teams?</p>';
+  html += '<div id="ch8-s2-hints"></div>';
+  html += '<div id="ch8-s2-check" style="margin-top:12px"></div>';
   html += '</div>';
   root.innerHTML = html;
+
+  progressiveHintWidget("ch8-s2-hints", chId, [
+    { label: "💡 Hint 1", html: "Do the same 3 steps as the table above: (1) how many ORDERED picks are there, (2) how many ways can each team of 2 be ORDERED, (3) divide." },
+    { label: "💡 Hint 2 — Step 1 worked out", html: "Ordered picks: the 1st officer has 6 choices, the 2nd officer has 5 remaining choices &rarr; 6 &times; 5 = <strong>30</strong> ordered picks." },
+    { label: "💡 Hint 3 — Step 2 + 3, full answer", html: "Each team of 2 (like officers P and Q) can be ordered 2 ways: P-then-Q, or Q-then-P. That's 2! = 2. So Teams = 30 &divide; 2 = <strong>15</strong>. Type 15 below to finish." }
+  ]);
+
   answerCheckWidget("ch8-s2-check", 15, function () { markStageDone(chId, 2); });
 },
 
@@ -1981,9 +2284,14 @@ function (chId, root) {
   html += '<div class="concept-title">🔢 Fix the Restricted Slot First</div>';
   html += '<div class="concept-body">';
   html += '<p>Work through the pool sizes in order, exactly as you filled the funnels above.</p>';
-  html += '<div id="ch9-chain"></div>';
+  html += '<div id="ch9-s1-visual"></div>';
+  html += '<div id="ch9-chain" style="margin-top:14px"></div>';
   html += '</div>';
   root.innerHTML = html;
+  document.getElementById("ch9-s1-visual").innerHTML = restrictedPoolVisualHtml(
+    ["Old Funnel", "Funnel B", "Funnel C", "Funnel D"],
+    [{ item: "Old Funnel", note: "not Pos.1" }]
+  );
   var box = document.getElementById("ch9-chain");
   box.innerHTML = '<p style="margin-top:6px">Position 1: how many funnels are allowed (excluding the Old Funnel)?</p><div id="ch9-c1"></div>';
   answerCheckWidget("ch9-c1", 3, function () {
@@ -2007,10 +2315,15 @@ function (chId, root) {
   html += '<div class="concept-title">💡 Predict With Two Restricted Slots</div>';
   html += '<div class="concept-body">';
   html += '<p>Now there are <strong>5</strong> funnels, and the Old Funnel can\'t go in Position 1 <strong>OR</strong> Position 2. Fix those two slots first (each only allows non-Old funnels), then fill the rest freely. Predict the total.</p>';
-  html += '<div class="callout engineer">Position 1: 4 choices &middot; Position 2: 3 choices (one non-Old funnel already used) &middot; Positions 3,4,5: fill freely from what remains.</div>';
-  html += '<div id="ch9-s2-check"></div>';
+  html += '<div id="ch9-s2-visual"></div>';
+  html += '<div class="callout engineer" style="margin-top:12px">Position 1: 4 choices &middot; Position 2: 3 choices (one non-Old funnel already used) &middot; Positions 3,4,5: fill freely from what remains.</div>';
+  html += '<div id="ch9-s2-check" style="margin-top:12px"></div>';
   html += '</div>';
   root.innerHTML = html;
+  document.getElementById("ch9-s2-visual").innerHTML = restrictedPoolVisualHtml(
+    ["Old Funnel", "Funnel B", "Funnel C", "Funnel D", "Funnel E"],
+    [{ item: "Old Funnel", note: "not Pos.1/2" }]
+  );
   answerCheckWidget("ch9-s2-check", 4*3*3*2*1, function () { markStageDone(chId, 2); });
 },
 
@@ -2079,9 +2392,14 @@ function (chId, root) {
   html += '<div class="concept-title">➗ Total minus Bad = Good</div>';
   html += '<div class="concept-body">';
   html += '<p>Work through it step by step.</p>';
-  html += '<div id="ch10-chain"></div>';
+  html += '<div id="ch10-s1-visual"></div>';
+  html += '<div id="ch10-chain" style="margin-top:14px"></div>';
   html += '</div>';
   root.innerHTML = html;
+  document.getElementById("ch10-s1-visual").innerHTML = categorizedPoolVisualHtml(
+    ["S1", "S2"], "Seniors", "#D9A441",
+    ["J1", "J2", "J3", "J4"], "Juniors", "#5B6B78"
+  );
   var box = document.getElementById("ch10-chain");
   box.innerHTML = '<p style="margin-top:6px">TOTAL: how many teams of 3 can be made from all 6 engineers (no restriction)?</p><div id="ch10-c1"></div>';
   answerCheckWidget("ch10-c1", 20, function () {
@@ -2238,14 +2556,14 @@ function (chId, root) {
    ========================================================= */
 
 var TOOL_DEFS = [
-  { name: "Addition", desc: "OR — pick ONE from separate piles. Add the pile sizes." },
-  { name: "Multiplication", desc: "AND — pick ONE from EACH independent group. Multiply straight across." },
-  { name: "Permutation", desc: "Arrange r people/items into distinct roles, no repeats. The pool shrinks each pick." },
-  { name: "Combination", desc: "Choose r items, unordered, no repeats. Divide the ordered count by r!." },
-  { name: "Restriction", desc: "Some slot has limited options. Fix that slot first, then fill the rest freely." },
-  { name: "Complementary", desc: "\"At least one\" is hard directly. Count Total minus Bad instead." },
-  { name: "Repetition", desc: "Items CAN repeat. Every position keeps the full pool — multiply the same number n times." },
-  { name: "Recursion", desc: "Build the count from smaller versions of the same problem, split by the last step." }
+  { name: "Addition", emoji: "🔧", ch: "Ch.5", desc: "Wrenches OR spanners — pick just ONE from either pile. Add the pile sizes together." },
+  { name: "Multiplication", emoji: "📡", ch: "Ch.6", desc: "Pressure dial AND valve dial — pick one of each. Multiply the choices together." },
+  { name: "Permutation", emoji: "⚓", ch: "Ch.7", desc: "Captain, then First Officer, then Second — order matters, and each pick shrinks the pool." },
+  { name: "Combination", emoji: "🔍", ch: "Ch.8", desc: "Pick an inspection team — order doesn't matter. The same team, tapped in any order, only counts once." },
+  { name: "Restriction", emoji: "🚫", ch: "Ch.9", desc: "The cracked funnel can't go first — fill that tricky slot before any other slot." },
+  { name: "Complementary", emoji: "➖", ch: "Ch.10", desc: "The team needs at least one Senior — count the Total, then take away the teams that have none." },
+  { name: "Repetition", emoji: "🔴", ch: "Ch.11", desc: "A lantern code where colours CAN repeat — every position keeps the same full set of choices." },
+  { name: "Recursion", emoji: "🪜", ch: "Ch.11", desc: "Climbing a ladder 1 or 2 rungs at a time — build a big answer out of two smaller ones." }
 ];
 
 var CH12_STAGES = [
@@ -2267,9 +2585,9 @@ function (chId, root) {
   TOOL_DEFS.forEach(function (tool, i) {
     var chip = document.createElement("div");
     chip.className = "item-chip";
-    chip.textContent = tool.name;
+    chip.textContent = tool.emoji + " " + tool.name;
     chip.onclick = function () {
-      document.getElementById("ch12-tool-detail").innerHTML = "<strong>" + tool.name + ":</strong> " + tool.desc;
+      document.getElementById("ch12-tool-detail").innerHTML = tool.emoji + " <strong>" + tool.name + "</strong> <span style=\"color:var(--ink-soft);font-family:var(--mono);font-size:11px\">(" + tool.ch + ")</span><br>" + tool.desc;
       if (!seen[i]) { seen[i] = true; seenCount++; document.getElementById("ch12-tool-progress").textContent = "Reviewed: " + seenCount + " / " + TOOL_DEFS.length; }
       if (seenCount === TOOL_DEFS.length) markStageDone(chId, 0);
     };
@@ -2301,7 +2619,7 @@ function (chId, root) {
   var solved = new Array(scenarios.length).fill(false);
   var solvedCount = 0;
   var box = document.getElementById("ch12-detective");
-  var toolNames = TOOL_DEFS.map(function (t) { return t.name; });
+  var toolNames = TOOL_DEFS.map(function (t) { return t.emoji + " " + t.name; });
 
   scenarios.forEach(function (sc, i) {
     var card = document.createElement("div");
@@ -2310,12 +2628,13 @@ function (chId, root) {
     card.innerHTML = '<div>' + sc.text + '</div><div class="item-row" id="ch12-det-opts-' + i + '" style="margin-top:8px"></div><div id="ch12-det-fb-' + i + '" style="margin-top:6px;font-size:12.5px;font-weight:600"></div>';
     box.appendChild(card);
     var optsRow = card.querySelector("#ch12-det-opts-" + i);
-    toolNames.forEach(function (name) {
+    toolNames.forEach(function (labeledName, ti) {
+      var name = TOOL_DEFS[ti].name;
       var chip = document.createElement("div");
       chip.className = "item-chip";
       chip.style.fontSize = "12px";
       chip.style.padding = "7px 10px";
-      chip.textContent = name;
+      chip.textContent = labeledName;
       chip.onclick = function () {
         if (solved[i]) return;
         var fb = document.getElementById("ch12-det-fb-" + i);
@@ -2342,11 +2661,16 @@ function (chId, root) {
   html += '<div class="concept-title">🗺️ Combining Two Tools</div>';
   html += '<div class="concept-body">';
   html += '<p>Real problems often need TWO tools stacked together. Try this one:</p>';
-  html += '<div class="callout engineer">9 officers need to fill 4 DISTINCT roles (order matters, no repeats) — but Officer X can\'t take Role 1. Which two tools do you need? (Permutation + Restriction — fix Role 1 first, then arrange the rest freely.)</div>';
+  html += '<div id="ch12-s2-visual"></div>';
+  html += '<div class="callout engineer" style="margin-top:12px">9 officers need to fill 4 DISTINCT roles (order matters, no repeats) — but Officer X can\'t take Role 1. Which two tools do you need? (Permutation + Restriction — fix Role 1 first, then arrange the rest freely.)</div>';
   html += '<p style="margin-top:10px">Work it out: how many valid role assignments are there?</p>';
   html += '<div id="ch12-s2-check"></div>';
   html += '</div>';
   root.innerHTML = html;
+  document.getElementById("ch12-s2-visual").innerHTML = restrictedPoolVisualHtml(
+    ["A", "B", "C", "D", "E", "F", "G", "H", "X"],
+    [{ item: "X", note: "not Role 1" }]
+  );
   answerCheckWidget("ch12-s2-check", 8*8*7*6, function () { markStageDone(chId, 2); });
 },
 
@@ -2395,21 +2719,9 @@ CHAPTERS.forEach(function (c) { CHAPTER_META[c.id] = c; });
    CHAPTER VIEW
    ========================================================= */
 
-function renderChapter(chId, stageIdx) {
-  var meta = CHAPTER_META[chId];
+function chapterChromeHtml(chId, stageIdx) {
   var st = getChapterState(chId);
-  if (stageIdx > st.stage) stageIdx = st.stage; // can't skip ahead of progress
-  st.stage = Math.max(st.stage, stageIdx);
-  saveProgress(PROGRESS);
-
-  var html = '';
-  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
-  html += '<div class="hdr-eyebrow">Ch.' + meta.num + ' &middot; Part A</div>';
-  html += '<div class="hdr-title">' + meta.emoji + ' ' + meta.title + '</div>';
-  html += '<div class="hdr-sub">' + meta.subtitle + '</div></div>';
-
-  html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
-
+  var html = '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
   html += '<div class="stage-tracker">';
   STAGE_LABELS.forEach(function (label, i) {
     var cls = "stage-dot";
@@ -2417,10 +2729,12 @@ function renderChapter(chId, stageIdx) {
     html += '<div class="' + cls + '">' + label + '</div>';
   });
   html += '</div>';
+  return html;
+}
 
-  html += '<div class="concept-card" id="stage-content"></div>';
-
-  html += '<div class="stage-nav">';
+function chapterNavHtml(chId, stageIdx) {
+  var st = getChapterState(chId);
+  var html = '<div class="stage-nav">';
   if (stageIdx > 0) html += '<button class="btn" onclick="CSApp.nav(\'chapter\',\'' + chId + '\',' + (stageIdx - 1) + ')">‹ Back</button>';
   html += '<button class="btn amber" onclick="CSApp.hint(\'' + chId + '\')">💡 Show me the next step</button>';
   var canAdvance = st.stageDone[stageIdx];
@@ -2430,6 +2744,39 @@ function renderChapter(chId, stageIdx) {
     html += '<button class="btn primary" ' + (canAdvance ? '' : 'disabled') + ' onclick="CSApp.nav(\'drawmemory\',\'' + chId + '\')">Finish Chapter ✓</button>';
   }
   html += '</div>';
+  return html;
+}
+
+/* Refreshes ONLY the star bar, stage tracker, and Next Stage button — never touches #stage-content,
+   so an in-progress widget (e.g. "Reviewed: 8/8") never gets wiped back to its initial state
+   just because the stage's completion condition was newly met. */
+function refreshChapterNav() {
+  if (route.view !== "chapter") return;
+  var chId = route.chapterId, stageIdx = route.stage;
+  var chromeEl = document.getElementById("chapter-chrome");
+  if (chromeEl) chromeEl.innerHTML = chapterChromeHtml(chId, stageIdx);
+  var navEl = document.getElementById("chapter-stage-nav");
+  if (navEl) navEl.innerHTML = chapterNavHtml(chId, stageIdx);
+}
+
+function renderChapter(chId, stageIdx) {
+  var meta = CHAPTER_META[chId];
+  var st = getChapterState(chId);
+  if (stageIdx > st.stage) stageIdx = st.stage; // can't skip ahead of progress
+  st.stage = Math.max(st.stage, stageIdx);
+  saveProgress(PROGRESS);
+
+  var html = '';
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">‹ Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Ch.' + meta.num + ' &middot; Part ' + meta.part + '</div>';
+  html += '<div class="hdr-title">' + meta.emoji + ' ' + meta.title + '</div>';
+  html += '<div class="hdr-sub">' + meta.subtitle + '</div></div>';
+
+  html += '<div id="chapter-chrome">' + chapterChromeHtml(chId, stageIdx) + '</div>';
+
+  html += '<div class="concept-card" id="stage-content"></div>';
+
+  html += '<div id="chapter-stage-nav">' + chapterNavHtml(chId, stageIdx) + '</div>';
 
   document.getElementById("app").innerHTML = html;
   var contentEl = document.getElementById("stage-content");
@@ -2920,6 +3267,193 @@ function renderErrorLog() {
    MAIN RENDER DISPATCH
    ========================================================= */
 
+/* =========================================================
+   SHIP'S LOG: save and restore
+   ========================================================= */
+
+var shipLogMsg = null;     // {kind:'ok'|'warn', text}
+var pendingAdd = null;     // {progress, errorLog, label}: waiting for the "Add" tap
+
+function describeProgress(p, errCount) {
+  var chaptersCleared = 0, bosses = 0;
+  CH_IDS.forEach(function (id) { if (p.chapters[id] && p.chapters[id].done) chaptersCleared++; });
+  BOSS_IDS.forEach(function (id) { if (p.chapters[id] && p.chapters[id].done) bosses++; });
+  var s = countStages(p) + " of 64 stages \u00B7 " + chaptersCleared + " chapters cleared \u00B7 " + bosses + " boss" + (bosses === 1 ? "" : "es");
+  if (errCount) s += " \u00B7 " + errCount + " error-log entr" + (errCount === 1 ? "y" : "ies");
+  return s;
+}
+function daysAgoText(ts) {
+  if (!ts) return "not yet";
+  var d = Math.floor((Date.now() - ts) / 86400000);
+  return d <= 0 ? "today" : (d === 1 ? "yesterday" : d + " days ago");
+}
+function dateStamp() {
+  var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
+  return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
+}
+function applyAdd(incoming) {
+  // one undo snapshot first, then merge (never removes anything)
+  lsSet(SNAP_KEY, JSON.stringify({ at: Date.now(), progress: PROGRESS, errorLog: loadErrorLog() }));
+  var before = countStages(PROGRESS);
+  PROGRESS = mergeProgress(PROGRESS, incoming.progress);
+  saveProgress(PROGRESS);
+  if (incoming.errorLog) saveErrorLog(mergeErrorLogs(loadErrorLog(), incoming.errorLog));
+  return countStages(PROGRESS) - before;
+}
+function undoRestore() {
+  var snap = lsJson(SNAP_KEY);
+  if (!snap || !snap.progress) return false;
+  PROGRESS = normalizeProgress(snap.progress);
+  saveProgress(PROGRESS);
+  saveErrorLog(normalizeErrorLog(snap.errorLog));
+  try { localStorage.removeItem(SNAP_KEY); } catch (e) {}
+  return true;
+}
+
+function renderShipLog() {
+  var code = encodeRestoreCode(PROGRESS);
+  var meta = loadBackupMeta();
+  var snap = lsJson(SNAP_KEY);
+  var html = "";
+  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">\u2039 Chart Room</button>';
+  html += '<div class="hdr-eyebrow">Chief Engineer\u2019s Journal</div>';
+  html += '<div class="hdr-title">\uD83D\uDCD3 Ship\u2019s Log</div>';
+  html += '<div class="hdr-sub">Save your progress so it can never be lost.</div></div>';
+
+  if (!storageOk) {
+    html += '<div class="section"><div class="warnbox"><strong>Progress can\u2019t be saved in this mode.</strong> This usually means Private Browsing, or a file opened from AirDrop. Open the website in normal Safari to save. The code below still works for copying what you have now.</div></div>';
+  }
+  if (shipLogMsg) {
+    html += '<div class="section"><div class="' + (shipLogMsg.kind === "ok" ? "okbox" : "warnbox") + '">' + escapeHtml(shipLogMsg.text) + '</div></div>';
+    shipLogMsg = null;
+  }
+
+  html += '<div class="section"><div class="concept-card"><div class="concept-title">1 \u00B7 Copy my Restore Code</div><div class="concept-body">';
+  html += '<p>Right now: <strong>' + escapeHtml(describeProgress(PROGRESS, 0)) + '</strong>, with stars and XP.</p>';
+  html += '<div class="code-box" id="sl-code">' + escapeHtml(code) + '</div>';
+  html += '<button class="btn primary" id="sl-copy" style="width:100%;margin-top:10px">Copy my code</button>';
+  html += '<p style="margin-top:10px;font-size:12.5px;color:var(--ink-soft)">Paste it into Notes or a message to yourself. Last saved: <strong>' + daysAgoText(meta && meta.at) + '</strong>.</p>';
+  html += '</div></div></div>';
+
+  html += '<div class="section"><div class="concept-card"><div class="concept-title">2 \u00B7 Backup file</div><div class="concept-body">';
+  html += '<p>A file with everything, including the Error Log. Save it to Files or iCloud Drive.</p>';
+  html += '<div class="log-btns"><button class="btn primary" id="sl-save">Save backup file</button><button class="btn" id="sl-load">Load backup file</button></div>';
+  html += '<input type="file" id="sl-file" accept=".json,application/json" style="display:none" />';
+  html += '</div></div></div>';
+
+  html += '<div class="section"><div class="concept-card"><div class="concept-title">3 \u00B7 Restore from a code</div><div class="concept-body">';
+  html += '<p>Paste a code to add its progress to this iPad. <strong>Nothing is ever erased.</strong></p>';
+  html += '<textarea class="note" id="sl-paste" placeholder="CSK-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" style="font-family:var(--mono);min-height:64px"></textarea>';
+  html += '<button class="btn" id="sl-check" style="width:100%;margin-top:10px">Check this code</button>';
+  html += '</div></div></div>';
+
+  html += '<div class="section" id="sl-preview"></div>';
+
+  if (snap && snap.progress) {
+    html += '<div class="section"><div class="callout engineer">Changed your mind about the last restore? <button class="btn small" id="sl-undo" style="margin-left:6px">Undo it</button></div></div>';
+  }
+  html += '<div class="foot-note">Moving to a new iPad, a new browser or the Home Screen? Those start empty. Paste your code there and the progress comes back.</div>';
+
+  document.getElementById("app").innerHTML = html;
+  wireShipLog(code);
+  if (pendingAdd) showPreview();
+}
+
+function showPreview() {
+  var el = document.getElementById("sl-preview");
+  if (!el || !pendingAdd) return;
+  var merged = mergeProgress(PROGRESS, pendingAdd.progress);
+  var gain = countStages(merged) - countStages(PROGRESS);
+  var h = '<div class="concept-card"><div class="concept-title">' + escapeHtml(pendingAdd.label) + '</div><div class="concept-body">';
+  h += '<p>It holds: <strong>' + escapeHtml(describeProgress(pendingAdd.progress, pendingAdd.errorLog ? pendingAdd.errorLog.length : 0)) + '</strong>.</p>';
+  if (gain > 0) {
+    h += '<p>Adding it gives this iPad <strong>' + gain + ' more stage' + (gain === 1 ? "" : "s") + '</strong>. Nothing is erased.</p>';
+  } else {
+    h += '<p>This iPad already has everything in it. (Stars, XP and the Error Log can still be topped up.)</p>';
+  }
+  h += '<div class="log-btns"><button class="btn primary" id="sl-apply">Add to this iPad</button><button class="btn" id="sl-cancel">Cancel</button></div>';
+  h += '</div></div>';
+  el.innerHTML = h;
+  document.getElementById("sl-apply").onclick = function () {
+    var added = applyAdd(pendingAdd);
+    pendingAdd = null;
+    shipLogMsg = { kind: "ok", text: added > 0 ? "Done! " + added + " stage" + (added === 1 ? "" : "s") + " added. Your Chart Room is up to date." : "Done. Everything was already here, and the extras were topped up." };
+    renderShipLog();
+  };
+  document.getElementById("sl-cancel").onclick = function () { pendingAdd = null; renderShipLog(); };
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function wireShipLog(code) {
+  document.getElementById("sl-copy").onclick = function () {
+    var done = function () { markBackedUp(); shipLogMsg = { kind: "ok", text: "Copied! Paste it into Notes so it\u2019s safe." }; renderShipLog(); };
+    var fallback = function () {
+      var box = document.getElementById("sl-code"), ok = false;
+      try { var r = document.createRange(); r.selectNodeContents(box); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); ok = document.execCommand("copy"); } catch (e) {}
+      if (ok) done(); else { shipLogMsg = { kind: "warn", text: "I couldn\u2019t copy automatically. Press and hold the code, choose Copy, then paste it into Notes." }; renderShipLog(); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, fallback); else fallback();
+  };
+
+  document.getElementById("sl-save").onclick = function () {
+    var text = buildBundle(PROGRESS, loadErrorLog(), new Date().toISOString());
+    var name = "combinatorics-backup-" + dateStamp() + ".json";
+    var saved = function () { markBackedUp(); shipLogMsg = { kind: "ok", text: "Backup file ready. Keep it in Files or iCloud Drive." }; renderShipLog(); };
+    try {
+      var file = new File([text], name, { type: "application/json" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: "Combinatorics backup" }).then(saved, function (e) { /* cancelled: nothing saved, nothing claimed */ });
+        return;
+      }
+    } catch (e) {}
+    try {
+      var blob = new Blob([text], { type: "application/json" }), url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+      saved();
+    } catch (e) { shipLogMsg = { kind: "warn", text: "This browser can\u2019t save files. Use the Restore Code instead." }; renderShipLog(); }
+  };
+
+  var fileInput = document.getElementById("sl-file");
+  document.getElementById("sl-load").onclick = function () { fileInput.value = ""; fileInput.click(); };
+  fileInput.onchange = function () {
+    var f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      var res = readBundle(String(rd.result || ""));
+      if (!res.ok) {
+        shipLogMsg = { kind: "warn", text: res.reason === "empty" ? "That backup has no progress in it." : "That file isn\u2019t a Combinatorics backup. Nothing was changed." };
+        pendingAdd = null; renderShipLog(); return;
+      }
+      pendingAdd = { progress: res.progress, errorLog: res.errorLog, label: "Backup file found" };
+      renderShipLog();
+    };
+    rd.onerror = function () { shipLogMsg = { kind: "warn", text: "I couldn\u2019t read that file. Nothing was changed." }; renderShipLog(); };
+    rd.readAsText(f);
+  };
+
+  document.getElementById("sl-check").onclick = function () {
+    var res = decodeRestoreCode(document.getElementById("sl-paste").value);
+    if (!res.ok) {
+      var why = { length: "That code is the wrong length. It should look like CSK-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX.",
+                  chars: "That code has a character I don\u2019t recognise. Check it against the original.",
+                  checksum: "One character looks wrong. Check it against the original, or paste it again.",
+                  version: "That code is from a different version of the app." }[res.reason];
+      shipLogMsg = { kind: "warn", text: why + " Nothing was changed." };
+      pendingAdd = null; renderShipLog(); return;
+    }
+    pendingAdd = { progress: res.progress, errorLog: null, label: "Code accepted" };
+    renderShipLog();
+  };
+
+  var undo = document.getElementById("sl-undo");
+  if (undo) undo.onclick = function () {
+    shipLogMsg = undoRestore() ? { kind: "ok", text: "Undone. Progress is back to how it was before the last restore." } : { kind: "warn", text: "Nothing to undo." };
+    pendingAdd = null; renderShipLog();
+  };
+}
+
 function render() {
   if (route.view === "home") renderHome();
   else if (route.view === "chapter") renderChapter(route.chapterId, route.stage);
@@ -2930,6 +3464,7 @@ function render() {
   else if (route.view === "mastermap") renderMasterMap();
   else if (route.view === "drawmemory") renderDrawMemory(route.chapterId);
   else if (route.view === "errorlog") renderErrorLog();
+  else if (route.view === "shiplog") renderShipLog();
 }
 
 window.CSApp = {
