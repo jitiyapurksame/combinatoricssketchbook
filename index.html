@@ -144,6 +144,30 @@ button { cursor: pointer; }
   background: var(--bg); border: 2px solid var(--teal); color: var(--teal); user-select: none;
 }
 .item-chip.picked { background: var(--teal); color: #fff; }
+.hub-link { display:inline-block; margin-top:10px; padding:10px 16px; min-height:44px; line-height:24px; border-radius:20px; border:2px solid var(--amber); color:var(--amber);
+  font-family:var(--mono); font-size:12px; font-weight:700; text-decoration:none; }
+.brief { margin:14px 16px 0; background:var(--nudge-bg, #FCEFD9); border:2px dashed var(--amber-dark, #B3822C); border-radius:10px; padding:0 14px; color:var(--ink); }
+.brief summary { cursor:pointer; min-height:44px; display:flex; align-items:center; font-family:var(--mono); font-weight:700; font-size:13px; color:var(--teal); }
+.brief p { margin:0 0 10px; font-size:14px; line-height:1.55; }
+.brief .brief-why { border-left:3px solid var(--teal); padding-left:10px; }
+.why-line { margin:12px 16px 0; font-size:12.5px; color:var(--ink-soft); line-height:1.5; }
+.ship-card { background:var(--teal); color:#fff; border-radius:10px; padding:16px; border:2px dashed var(--amber); box-shadow:0 3px 12px rgba(14,42,69,0.18); }
+.ship-eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--amber); }
+.ship-name { font-family:var(--mono); font-weight:700; font-size:20px; margin:6px 0 10px; }
+.ship-svg { width:100%; height:auto; display:block; border-radius:8px; }
+.ship-svg .hs-outline * { fill:none !important; stroke:#D9A441 !important; stroke-width:1; stroke-dasharray:4 3; opacity:.7; }
+.ship-meter { height:10px; background:rgba(255,255,255,.18); border-radius:6px; overflow:hidden; margin-top:12px; }
+.ship-meter-fill { height:100%; background:linear-gradient(90deg,var(--amber),#fff); border-radius:6px; transition:width .4s ease; }
+.ship-meter-text { font-family:var(--mono); font-size:11.5px; color:var(--amber); margin:8px 0 0; line-height:1.5; }
+.ship-next { display:block; width:100%; margin-top:12px; padding:14px; border-radius:8px; text-align:center; background:var(--success); color:#fff; font-weight:700; font-size:15px; border:none; cursor:pointer; min-height:48px; }
+.ship-launch { margin-top:12px; padding:12px; border-radius:8px; text-align:center; font-weight:700; background:var(--success-bg); color:#1e5c40; }
+.ship-parts summary { cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--amber); padding:10px 0; min-height:44px; }
+.ship-chips { display:flex; flex-direction:column; gap:8px; }
+.ship-chip { display:block; width:100%; text-align:left; padding:10px 12px; border-radius:8px; font-size:13px; line-height:1.4; min-height:44px; cursor:pointer;
+  background:rgba(255,255,255,.08); border:1px solid rgba(217,164,65,.35); color:#fff; }
+.ship-chip.done { background:rgba(63,163,122,.22); border-color:rgba(63,163,122,.6); }
+.ship-chip:disabled { opacity:.55; cursor:default; }
+.ship-chip small { display:block; color:rgba(255,255,255,.7); font-family:var(--mono); font-size:11px; }
 .item-chip.partner { box-shadow: 0 0 0 3px var(--success); }
 .slot-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
 .slot-box { min-width:74px; min-height:44px; padding:6px 8px; border:2px dashed var(--amber); border-radius:8px; text-align:center;
@@ -605,7 +629,7 @@ function nav(view, chapterId, stage) {
 
 var CHAPTERS = [
   {
-    id: "ch1", part: "A", num: 1, emoji: "🛟",
+    id: "ch1", part: "A", num: 1, emoji: "⭕",
     title: "What Does Count Really Mean?",
     subtitle: "Lifebelts on deck & the Bridge's signal flags"
   },
@@ -655,7 +679,7 @@ var CHAPTERS = [
     subtitle: "Building the \"bad\" team so Total minus Bad gives Good"
   },
   {
-    id: "ch11", part: "C", num: 11, emoji: "🪜",
+    id: "ch11", part: "C", num: 11, emoji: "🧗",
     title: "Repetition & Recursion",
     subtitle: "Lantern codes that repeat, and the engine room ladder"
   },
@@ -670,6 +694,108 @@ var BOSS1 = { id: "boss1", emoji: "👹", title: "The Captain's Missing Signal",
 var BOSS2 = { id: "boss2", emoji: "👹", title: "The Bridge Team Assembly", subtitle: "Boss Battle 2 — Part B Checkpoint" };
 var BOSS3 = { id: "boss3", emoji: "👹", title: "The Captain's Final Inspection Day", subtitle: "Boss Battle 3 — Part C Checkpoint" };
 var BOSS4 = { id: "boss4", emoji: "🎓", title: "The Graduation Voyage", subtitle: "Boss Battle 4 — Final Checkpoint, All Parts" };
+
+
+/* =========================================================
+   MISSION BRIEFINGS — the story + the "why" for every chapter and boss
+   ========================================================= */
+var BRIEFS = {
+ "ch1": {
+  "theme": "🚢 Titanic",
+  "story": "The day before sailing, the bosun counts the lifebelts. But is the question “how many belts?” or “how many ways can we hand them out?” Those are two different questions!",
+  "why": "Every counting problem starts with one question: what exactly am I counting? Pick wrong and your answer is wrong, even if your maths is perfect."
+ },
+ "ch2": {
+  "theme": "👻 Haunted House",
+  "story": "Deck officers work in pairs, and a missing pair means a watch with nobody on it. Pretend each officer is a room in a haunted house and you must check every pair of rooms. Ghosts love the pair you forgot!",
+  "why": "A system (A with everyone, then B with everyone left, and so on) beats guessing. Engineers use the same trick to test every pair of circuits."
+ },
+ "ch3": {
+  "theme": "🧪 Cooking = Chemistry",
+  "story": "The engine room has a dial with 3 settings and a valve with 2. A chemist testing a recipe does the same thing: every branch of the tree is one experiment. Draw the tree and no experiment gets forgotten or repeated.",
+  "why": "A tree turns “I think I got them all” into “I can SEE I got them all”. Scientists use trees to plan their tests."
+ },
+ "ch4": {
+  "theme": "🚗 VW Beetle",
+  "story": "A showroom sells Beetles in 4 colours with 3 kinds of interior. A grid lists every possible car, one box each. The ship's cabin grid (deck × class) works the same way.",
+  "why": "A table shows every combo AND lets you count by rows × columns, a shortcut that works for 5 cars or 5,000."
+ },
+ "ch5": {
+  "theme": "❄️ Princess Anna",
+  "story": "Anna must cross a frozen river. She can take the ice bridge OR the sleigh trail, never both on one trip. Either-or means the options ADD up. Grabbing a wrench OR a spanner works the same way.",
+  "why": "Use ADD when you pick ONE thing from separate piles. It also stops you counting the same thing twice."
+ },
+ "ch6": {
+  "theme": "🧪 Cooking = Chemistry",
+  "story": "A lab potion needs a base (3 choices), a colour (4) and a bubble type (2). The choices don't affect each other, so they MULTIPLY. The wireless room's three dials work the same way.",
+  "why": "Multiplying is a shortcut for “and then, and then”. Without it you'd write every potion out one by one."
+ },
+ "ch7": {
+  "theme": "🍄 Super Mario",
+  "story": "Five racers finish a Mario-style race. Who gets 1st, 2nd and 3rd on the podium? Swap two racers and it's a different result! The bridge watch roster is the same: who goes first matters.",
+  "why": "Permutations count arrangements when ORDER matters: rankings, passwords, timetables. Each pick leaves one fewer choice, a shrinking pool."
+ },
+ "ch8": {
+  "theme": "🧪 Cooking = Chemistry",
+  "story": "A chef grabs 3 ingredients out of 6 for a soup. Salt, pepper, onion is the SAME soup as onion, salt, pepper. The boiler inspection team works like that: you pick people, you don't line them up.",
+  "why": "Combinations count groups. We divide by r! to remove the repeats (the same group in a different order). That is the secret behind “why divide?”."
+ },
+ "ch9": {
+  "theme": "👻 Haunted House",
+  "story": "In the haunted house one door is locked for the visitor in the red hat. Smart ghost-hunters place the fussy visitor FIRST, then arrange everyone else freely. The ship's cracked funnel works the same way: fix the restricted slot first.",
+  "why": "Restrictions are everywhere: a password can't start with 0, a seat is reserved. Handle the picky slot first and the rest is easy."
+ },
+ "ch10": {
+  "theme": "🚗 VW Beetle",
+  "story": "How many Beetles in the lot are NOT yellow? Counting every other colour is slow. Faster: count ALL the Beetles, then subtract the yellow ones. That's Total − Bad = Good.",
+  "why": "Sometimes the “bad” cases are far easier to count than the “good” ones. Smart engineers count the easy side."
+ },
+ "ch11": {
+  "theme": "❄️ Princess Anna",
+  "story": "Anna climbs a staircase of ice, taking 1 or 2 steps at a time. To land on step 5 she came from step 4 or step 3, so ways(5) = ways(4) + ways(3). A big answer built from smaller ones is called recursion.",
+  "why": "Recursion is how computers solve big problems: solve a tiny one, then build up. It's also where the famous Fibonacci numbers come from."
+ },
+ "ch12": {
+  "theme": "🚢 Titanic",
+  "story": "You are the Chief Engineer on the final voyage. A problem arrives and you have 8 tools. A real engineer doesn't grab one at random. First ask 3 questions (does order matter? can things repeat? is there a restriction?), then pick the tool.",
+  "why": "In exams the hard part is choosing the tool, not the arithmetic. This chapter trains your tool-detective eyes."
+ },
+ "boss1": {
+  "theme": "🚢 Titanic",
+  "story": "The wireless operator must send the Captain's signal, but one flag can never fly first. A wrong count and the wrong signal goes out! Time to show everything from Part A.",
+  "why": "Boss Battles mix what you learned, just like real exams. You don't need the whole answer yet, only Step 1."
+ },
+ "boss2": {
+  "theme": "🍄 Super Mario",
+  "story": "Boss castle! The gate only opens when you assemble the right team: a signal, a roster, an honor guard. Every Part B tool is a power-up. Use the right one at each step.",
+  "why": "Real problems have several parts. Winning means finishing one part at a time, with the right tool each time."
+ },
+ "boss3": {
+  "theme": "👻 Haunted House",
+  "story": "Inspection day in the haunted house! Ghost-proof the line-ups, count the “bad” ones to find the “good” ones, and decode the repeating lantern codes. Every Part C tool is a flashlight.",
+  "why": "Restrictions, complements and repetition show up in almost every competition problem. This is your practice run."
+ },
+ "boss4": {
+  "theme": "🚢 Titanic",
+  "story": "The great liners were built by engineers who counted every rivet, lifebelt and lifeboat. This is your Graduation Voyage: one question from every Part, and every tool in your belt.",
+  "why": "Pass this and your ship is complete. And you'll know HOW to count, not just what the answer is."
+ }
+};
+var STAGE_WHY = [
+  "Why this step? Engineers sketch BEFORE they calculate. When you can see it, the numbers make sense.",
+  "Why this step? A strategy is a shortcut for your brain, so you never have to list everything.",
+  "Why this step? A rule works for 5 things or 5,000 things. No listing needed.",
+  "Why this step? If you know WHY it works, you never forget it, and exam twists can't trick you.",
+  "Why this step? Exams mix the tools. This is your sea trial. Step 1 is all you need to start."
+];
+function briefHtml(id, open) {
+  var b = BRIEFS[id];
+  if (!b) return "";
+  return '<details class="brief"' + (open ? ' open' : '') + '><summary>🎬 Mission Briefing · ' + b.theme + '</summary>' +
+    '<p>📖 ' + b.story + '</p>' +
+    '<p class="brief-why">🔧 <strong>Why this matters:</strong> ' + b.why + '</p>' +
+    '<p>🎯 <strong>Your only job right now:</strong> do the FIRST tiny step. Rough is fine, engineers revise.</p></details>';
+}
 
 /* =========================================================
    SHARED SMALL RENDERERS
@@ -783,6 +909,123 @@ function renderPartSection(part) {
   return html;
 }
 
+
+/* =========================================================
+   SHIPYARD — total progress drawn as a ship (16 parts = 12 chapters + 4 bosses)
+   ========================================================= */
+var SHIP_NAME = "Clipper Combinator";
+function repeatShapes(n, fn) { var out = ""; for (var i = 0; i < n; i++) out += fn(i); return out; }
+/* An ORIGINAL three-masted clipper. Every part carries a symbol of the chapter that builds it
+   (tally marks, branching rigging, a window grid, a + sail, a × sail, ordered flags, a lantern...). */
+var SHIP_PARTS = [
+  { id: "ch1",   name: "Keel (tally marks)" },        { id: "ch2",   name: "Hull & Masts" },
+  { id: "ch3",   name: "Branching Rigging" },         { id: "ch4",   name: "Cabin Grid" },
+  { id: "boss1", name: "Rudder" },                    { id: "ch5",   name: "Fore Sail (+)" },
+  { id: "ch6",   name: "Main Sail (×)" },             { id: "ch7",   name: "Signal Flags" },
+  { id: "ch8",   name: "Crow's Nest" },               { id: "boss2", name: "Topsails" },
+  { id: "ch9",   name: "Anchor" },                    { id: "ch10",  name: "Lifeboats" },
+  { id: "ch11",  name: "Rope Ladder" },               { id: "boss3", name: "Stern Lantern" },
+  { id: "ch12",  name: "Mizzen Sail" },               { id: "boss4", name: "Pennant" }
+];
+var SHIP_SHAPES = {
+  ch1: '<path fill="#4A2F0C" d="M150,172 L500,166 L490,182 Q470,188 440,188 L184,188 Q160,186 150,172 Z"/>' +
+       repeatShapes(4, function (g) {
+         var x = 205 + g * 68;
+         return '<path fill="none" stroke="#F1ECDD" stroke-width="1.8" stroke-linecap="round" d="M' + x + ',176 L' + x + ',184 M' + (x + 6) + ',176 L' + (x + 6) + ',184 M' + (x + 12) + ',176 L' + (x + 12) + ',184 M' + (x + 18) + ',176 L' + (x + 18) + ',184 M' + (x - 4) + ',183 L' + (x + 22) + ',177"/>';
+       }),
+  ch2: '<path fill="#8A5A18" d="M66,118 L170,118 L170,128 L500,128 Q548,128 584,112 L590,116 Q560,150 500,166 L150,172 Q96,172 76,150 Q68,134 66,118 Z"/>' +
+       '<path fill="none" stroke="#D9A441" stroke-width="2.5" d="M66,119 L170,119 L170,129 L500,129 Q548,129 586,113"/>' +
+       '<path fill="none" stroke="#5E3C10" stroke-width="1.5" d="M74,138 L555,134 M92,148 L525,146 M140,158 L495,157"/>' +
+       '<path fill="none" stroke="#8A5A18" stroke-width="5" stroke-linecap="round" d="M548,124 L612,98"/>' +
+       '<rect fill="#D8C49A" x="468.5" y="30" width="3.5" height="99"/><rect fill="#D8C49A" x="298.5" y="8" width="3.5" height="121"/><rect fill="#D8C49A" x="122.5" y="44" width="3.5" height="55"/>',
+  ch3: '<path fill="none" stroke="#D8C49A" stroke-width="1.3" d="M300,16 L205,128 M300,16 L235,128 M300,16 L265,128 M470,32 L535,128 M470,32 L560,126"/>',
+  ch4: '<rect fill="#F1ECDD" x="72" y="98" width="98" height="21" rx="2"/>' +
+       repeatShapes(8, function (i) { var c = i % 4, r = Math.floor(i / 4); return '<rect fill="#0E2A45" x="' + (80 + c * 22) + '" y="' + (102 + r * 8) + '" width="14" height="5" rx="1"/>'; }),
+  boss1: '<path fill="#4A2F0C" d="M62,124 L72,122 L74,178 Q68,188 60,180 Z"/>',
+  ch5: '<rect fill="#D8C49A" x="440" y="64" width="60" height="3"/><path fill="#F1ECDD" d="M444,67 L496,67 Q501,88 495,112 L445,112 Q439,88 444,67 Z"/>' +
+       '<rect fill="#C1503A" x="462" y="84" width="16" height="4"/><rect fill="#C1503A" x="468" y="78" width="4" height="16"/>',
+  ch6: '<rect fill="#D8C49A" x="258" y="58" width="84" height="3"/><path fill="#F1ECDD" d="M262,61 L338,61 Q344,86 336,112 L264,112 Q256,86 262,61 Z"/>' +
+       '<path fill="none" stroke="#C1503A" stroke-width="5" stroke-linecap="round" d="M288,74 L312,98 M312,74 L288,98"/>',
+  ch7: '<path fill="none" stroke="#D8C49A" stroke-width="1" d="M304,18 Q385,42 466,34"/>' +
+       repeatShapes(5, function (i) {
+         var t = [0.14, 0.3, 0.46, 0.62, 0.8][i], u = 1 - t;
+         var x = u * u * 304 + 2 * u * t * 385 + t * t * 466, y = u * u * 18 + 2 * u * t * 42 + t * t * 34;
+         var col = ["#C1503A", "#F1ECDD", "#D9A441", "#3FA37A", "#2a6a9c"][i];
+         return '<rect fill="' + col + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="9" height="11"/>';
+       }),
+  ch8: '<rect fill="#D8C49A" x="286" y="45" width="28" height="3"/><path fill="#4A2F0C" d="M288,48 L312,48 L309,56 L291,56 Z"/>',
+  boss2: '<rect fill="#D8C49A" x="446" y="34" width="48" height="3"/><path fill="#F1ECDD" d="M450,37 L490,37 Q493,48 489,60 L451,60 Q447,48 450,37 Z"/><rect fill="#D9A441" x="449" y="47" width="42" height="3"/>' +
+         '<rect fill="#D8C49A" x="266" y="20" width="68" height="3"/><path fill="#F1ECDD" d="M270,23 L330,23 Q334,34 329,45 L271,45 Q266,34 270,23 Z"/><rect fill="#D9A441" x="268" y="32" width="64" height="3"/>',
+  ch9: '<circle fill="none" stroke="#F1ECDD" stroke-width="2" cx="536" cy="132" r="3"/><rect fill="#F1ECDD" x="534.8" y="135" width="2.4" height="11"/><rect fill="#F1ECDD" x="530" y="138" width="12" height="2.4"/><path fill="none" stroke="#F1ECDD" stroke-width="2.4" d="M528,144 Q536,152 544,144"/>',
+  ch10: '<path fill="#F1ECDD" d="M356,122 L386,122 L382,128 L360,128 Z"/><rect fill="#C1503A" x="356" y="120" width="30" height="2"/>' +
+        '<path fill="#F1ECDD" d="M394,122 L424,122 L420,128 L398,128 Z"/><rect fill="#C1503A" x="394" y="120" width="30" height="2"/>',
+  ch11: '<path fill="none" stroke="#F1ECDD" stroke-width="2" d="M440,129 L430,168 M452,129 L442,168"/>' +
+        repeatShapes(6, function (i) { var t = (i + 0.6) / 6.4, y = 129 + 39 * t; return '<line stroke="#F1ECDD" stroke-width="1.8" x1="' + (440 - 10 * t).toFixed(1) + '" y1="' + y.toFixed(1) + '" x2="' + (452 - 10 * t).toFixed(1) + '" y2="' + y.toFixed(1) + '"/>'; }),
+  boss3: '<rect fill="#D8C49A" x="82" y="78" width="2.5" height="20"/><circle fill="#FFD27A" opacity="0.3" cx="83.5" cy="75" r="12"/>' +
+         '<rect fill="#D9A441" x="77" y="70" width="13" height="10" rx="2"/><path fill="#4A2F0C" d="M76,70 L83.5,63 L91,70 Z"/>',
+  ch12: '<rect fill="#D8C49A" x="94" y="56" width="60" height="3"/><path fill="#F1ECDD" d="M98,59 L150,59 Q154,78 149,96 L99,96 Q94,78 98,59 Z"/><rect fill="#C1503A" x="97" y="76" width="54" height="3"/>',
+  boss4: '<path fill="#C1503A" d="M301,9 L344,13 L301,18 Z"/><path fill="#F1ECDD" d="M301,12 L328,13.4 L301,15 Z"/>'
+};
+function partFraction(id) {
+  var st = getChapterState(id);
+  if (st.done) return 1;
+  var n = 0; for (var i = 0; i < 4; i++) if (st.stageDone[i]) n++;
+  return n / 5;
+}
+function partUnlocked(id) {
+  if (id.indexOf("boss") !== 0) return true;
+  var part = PARTS.filter(function (p) { return p.boss.id === id; })[0];
+  return !part || CHAPTERS.filter(function (c) { return c.part === part.key; }).every(function (c) { return getChapterState(c.id).done; });
+}
+function partTitle(id) {
+  var c = CHAPTERS.filter(function (x) { return x.id === id; })[0];
+  if (c) return "Ch." + c.num + " — " + c.title;
+  var b = [BOSS1, BOSS2, BOSS3, BOSS4].filter(function (x) { return x.id === id; })[0];
+  return b ? "Boss — " + b.title : id;
+}
+function shipSvg() {
+  var built = "", outline = "";
+  SHIP_PARTS.forEach(function (p) {
+    var f = partFraction(p.id);
+    var op = f <= 0 ? 0 : Math.max(0.45, 0.25 + 0.75 * f).toFixed(2);
+    built += '<g data-part="' + p.id + '" style="opacity:' + op + '">' + SHIP_SHAPES[p.id] + '</g>';
+    outline += '<g class="hs-outline">' + SHIP_SHAPES[p.id] + '</g>';
+  });
+  var sea = '<path d="M0,172 Q40,164 80,172 T160,172 T240,172 T320,172 T400,172 T480,172 T560,172 T640,172 L640,225 L0,225 Z" fill="#2a6a9c" opacity="0.4"/>';
+  return '<svg class="ship-svg" viewBox="0 0 620 225" role="img" aria-label="Your ship under construction">' +
+    '<rect width="620" height="172" fill="#0b2237" opacity="0.5"/>' + built + sea + outline + '</svg>';
+}
+function shipyardHtml() {
+  var sum = 0, certified = 0;
+  SHIP_PARTS.forEach(function (p) { var f = partFraction(p.id); sum += f; if (f >= 1) certified++; });
+  var pct = Math.round((sum / SHIP_PARTS.length) * 100);
+  var next = SHIP_PARTS.filter(function (p) { return partFraction(p.id) < 1; })[0];
+  var h = '<div class="section"><div class="section-label">🚢 Shipyard — Your Ship</div><div class="ship-card">';
+  h += '<div class="ship-eyebrow">The Counting &amp; Combinatorics Ship</div><h2 class="ship-name">' + SHIP_NAME + '</h2>';
+  h += shipSvg();
+  h += '<div class="ship-meter" aria-label="Build progress"><div class="ship-meter-fill" style="width:' + pct + '%"></div></div>';
+  h += '<p class="ship-meter-text">' + certified + ' of ' + SHIP_PARTS.length + ' parts certified — ship ' + pct + '% built. Every stage you finish adds a piece!</p>';
+  if (next) {
+    var st = getChapterState(next.id);
+    var started = sum > 0 && (st.stage > 0 || st.stageDone.some(Boolean));
+    var target = next.id.indexOf("boss") === 0 ? "CSApp.nav('" + next.id + "')" : "CSApp.nav('chapter','" + next.id + "'," + (st.stage || 0) + ")";
+    h += '<button class="ship-next" id="ship-next" onclick="' + target + '">' + (started ? 'Keep building: ' : 'Start here: ') + next.name + ' → ' + escapeHtml(partTitle(next.id)) + '</button>';
+  } else {
+    h += '<div class="ship-launch" id="ship-launch">🎉 ALL SYSTEMS GO! ' + SHIP_NAME + ' is ready to launch.</div>';
+  }
+  h += '<details class="ship-parts"><summary>See all ' + SHIP_PARTS.length + ' parts</summary><div class="ship-chips">';
+  SHIP_PARTS.forEach(function (p) {
+    var f = partFraction(p.id), done = f >= 1, open = partUnlocked(p.id);
+    var st = getChapterState(p.id);
+    var target = p.id.indexOf("boss") === 0 ? "CSApp.nav('" + p.id + "')" : "CSApp.nav('chapter','" + p.id + "'," + (st.stage || 0) + ")";
+    h += '<button class="ship-chip' + (done ? ' done' : '') + '"' + (open ? ' onclick="' + target + '"' : ' disabled') + '>' +
+      (done ? '✅ ' : (open ? '🔧 ' : '🔒 ')) + p.name + ' — ' + Math.round(f * 100) + '%' +
+      '<small>' + escapeHtml(partTitle(p.id)) + (open ? '' : ' · finish this Part\'s chapters first') + '</small></button>';
+  });
+  h += '</div></details></div></div>';
+  return h;
+}
+
 function renderHome() {
   var stats = chapterProgressStats();
   var pct = Math.round((stats.done / stats.total) * 100);
@@ -792,11 +1035,14 @@ function renderHome() {
   html += '<div class="hdr-eyebrow">RMS Design Files &middot; Counting &amp; Combinatorics Wing</div>';
   html += '<div class="hdr-title">⚓ J.J.\'s Combinatorics Sketchbook</div>';
   html += '<div class="hdr-sub">Step 1 beats perfection — open a chapter and start.</div>';
+  html += '<a class="hub-link" id="hub-link" href="https://jj-engineer-port.vercel.app/">⚓ Back to Fleet Command (Hub)</a>';
   html += '</div>';
 
   html += '<div class="section"><div class="section-label">🧭 Manual Progress</div>';
   html += '<div class="voyage-card"><div class="voyage-row"><span>CHAPTERS &amp; BOSS BATTLES CLEARED</span><span class="num">' + stats.done + ' / ' + stats.total + '</span></div>';
   html += '<div class="voyage-track"><div class="voyage-fill" style="width:' + pct + '%"></div></div></div></div>';
+
+  html += shipyardHtml();
 
   if (storageFailed) {
     html += '<div class="section"><div class="feedback show no">⚠ This browser is not saving your progress (private tab or blocked storage). Open the app in a normal tab, or save a backup file before you leave.</div></div>';
@@ -1414,7 +1660,7 @@ function (chId, root) {
   var items = ["🔴","🟢","🔵"];
   var html = '';
   html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
-  html += '<div class="concept-title">🛟 Three Lifebelts on Deck</div>';
+  html += '<div class="concept-title">⭕ Three Lifebelts on Deck</div>';
   html += '<div class="concept-body">';
   html += '<p>The bosun has laid out <strong>3 lifebelts</strong> on the boat deck before a drill.</p>';
   html += '<div class="item-row" id="ch1-s0-items"></div>';
@@ -1432,8 +1678,8 @@ function (chId, root) {
       chip.classList.add("picked");
       var msg = document.getElementById("ch1-s0-msg");
       msg.innerHTML = 'You could have picked <strong>any of the 3</strong> lifebelts — that\'s <strong>3 different choices</strong> for grabbing just 1. Hold that thought: it\'s the seed of everything in this sketchbook.';
-      markStageDone(chId, 0);
-      render();
+      markStageDone(chId, 0);   // updates the Next Stage button in place; never rebuild the screen here
+      msg.innerHTML += ' <strong>✅ Stage 1 done. Tap “Next Stage ›” below.</strong>';
     };
     row.appendChild(chip);
   });
@@ -2619,7 +2865,7 @@ function (chId, root) {
 function (chId, root) {
   var html = '';
   html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
-  html += '<div class="concept-title">🪜 Climbing the Engine Room Ladder</div>';
+  html += '<div class="concept-title">🧗 Climbing the Engine Room Ladder</div>';
   html += '<div class="concept-body">';
   html += '<p>New puzzle: you climb a ladder taking <strong>1 or 2 rungs</strong> at a time. How many different ways to climb a ladder of height <em>n</em>?</p>';
   html += '<div id="ch11-ladder"></div>';
@@ -2688,7 +2934,7 @@ var TOOL_DEFS = [
   { name: "Restriction", emoji: "🚫", ch: "Ch.9", desc: "The cracked funnel can't go first — fill that tricky slot before any other slot." },
   { name: "Complementary", emoji: "➖", ch: "Ch.10", desc: "The team needs at least one Senior — count the Total, then take away the teams that have none." },
   { name: "Repetition", emoji: "🔴", ch: "Ch.11", desc: "A lantern code where colours CAN repeat — every position keeps the same full set of choices." },
-  { name: "Recursion", emoji: "🪜", ch: "Ch.11", desc: "Climbing a ladder 1 or 2 rungs at a time — build a big answer out of two smaller ones." }
+  { name: "Recursion", emoji: "🧗", ch: "Ch.11", desc: "Climbing a ladder 1 or 2 rungs at a time — build a big answer out of two smaller ones." }
 ];
 
 var CH12_STAGES = [
@@ -2897,7 +3143,9 @@ function renderChapter(chId, stageIdx) {
   html += '<div class="hdr-title">' + meta.emoji + ' ' + meta.title + '</div>';
   html += '<div class="hdr-sub">' + meta.subtitle + '</div></div>';
 
+  html += briefHtml(chId, stageIdx === 0);
   html += '<div id="chapter-chrome">' + chapterChromeHtml(chId, stageIdx) + '</div>';
+  html += '<div class="why-line">🎯 ' + STAGE_WHY[stageIdx] + '</div>';
 
   html += '<div class="concept-card" id="stage-content"></div>';
 
@@ -2929,12 +3177,15 @@ function hintCurrentChapter(chId) {
   }
   var idx = (route.view === "chapter" && route.stage >= 0 && route.stage <= 4) ? route.stage : 0;
   var text = (route.view === "chapter") ? NUDGES[idx] : "Do just the next step on the list. Read it, try it, check it. One step at a time.";
+  if (route.view === "chapter" && getChapterState(chId).stageDone[idx]) text = "✅ This stage is already done! Tap <strong>Next Stage ›</strong> to keep building the ship.";
   var slot = document.getElementById("hint-slot");
   if (!slot) {
     slot = document.createElement("div");
     slot.id = "hint-slot";
+    var anchor = document.getElementById("chapter-stage-nav") || document.querySelector(".stage-nav");
     var app = document.getElementById("app");
-    if (app) app.appendChild(slot);
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(slot, anchor);
+    else if (app) app.appendChild(slot);
   }
   slot.innerHTML = '<div class="callout engineer" style="margin:12px 16px"><strong>💡 Engineer\'s nudge</strong><br>' + text + '</div>';
 }
@@ -2961,6 +3212,7 @@ function renderBoss1() {
   html += '<div class="hdr-eyebrow">Boss Battle 1 &middot; Part A Checkpoint</div>';
   html += '<div class="hdr-title">👹 The Captain\'s Missing Signal</div>';
   html += '<div class="hdr-sub">No formulas allowed — draw, organise, count, check.</div></div>';
+  html += briefHtml("boss1", true);
 
   html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
 
@@ -3033,6 +3285,7 @@ function renderBoss2() {
   html += '<div class="hdr-eyebrow">Boss Battle 2 &middot; Part B Checkpoint</div>';
   html += '<div class="hdr-title">👹 The Bridge Team Assembly</div>';
   html += '<div class="hdr-sub">Every principle from Part B, one after another.</div></div>';
+  html += briefHtml("boss2", true);
 
   html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
 
@@ -3100,6 +3353,7 @@ function renderBoss3() {
   html += '<div class="hdr-eyebrow">Boss Battle 3 &middot; Part C Checkpoint</div>';
   html += '<div class="hdr-title">👹 The Captain\'s Final Inspection Day</div>';
   html += '<div class="hdr-sub">Every principle from Part C, one after another.</div></div>';
+  html += briefHtml("boss3", true);
 
   html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
 
@@ -3167,6 +3421,7 @@ function renderBoss4() {
   html += '<div class="hdr-eyebrow">Boss Battle 4 &middot; Final Checkpoint</div>';
   html += '<div class="hdr-title">🎓 The Graduation Voyage</div>';
   html += '<div class="hdr-sub">One skill from every Part of the manual.</div></div>';
+  html += briefHtml("boss4", true);
 
   html += '<div class="star-bar"><span>⭐ Effort Stars</span><span class="stars">' + starsHtml(st.stars) + '</span></div>';
 
