@@ -144,6 +144,10 @@ button { cursor: pointer; }
   background: var(--bg); border: 2px solid var(--teal); color: var(--teal); user-select: none;
 }
 .item-chip.picked { background: var(--teal); color: #fff; }
+.item-chip.partner { box-shadow: 0 0 0 3px var(--success); }
+.slot-row { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+.slot-box { min-width:74px; min-height:44px; padding:6px 8px; border:2px dashed var(--amber); border-radius:8px; text-align:center;
+  font-family:var(--mono); font-size:10.5px; color:var(--amber); display:flex; align-items:center; justify-content:center; }
 .item-chip.in-pick { opacity: 0.3; pointer-events: none; }
 .lb-instruction { font-size: 13px; color: var(--ink-soft); margin-top: 12px; }
 .lb-current { font-family: var(--mono); font-size: 13px; margin-top: 8px; display: flex; align-items: center; gap: 8px; }
@@ -248,36 +252,6 @@ textarea.note {
 
 .foot-note { margin: 18px 16px 0; font-size: 11px; color: var(--ink-soft); text-align: center; line-height: 1.6; }
 .foot-note code { font-family: var(--mono); background: var(--card); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(14,42,69,0.1); }
-.code-box { font-family: var(--mono); font-weight: 700; font-size: 15px; letter-spacing: 0.04em; line-height: 1.6; text-align: center; word-break: break-all; background: var(--bg); border: 2px dashed var(--amber-dark); border-radius: 10px; padding: 14px 10px; color: var(--teal); user-select: all; -webkit-user-select: all; }
-.log-btns { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-.log-btns .btn { flex: 1; min-width: 130px; min-height: 44px; }
-#sl-copy, #sl-check, #sl-undo, #sl-apply, #sl-cancel, #sl-save, #sl-load { min-height: 44px; }
-.okbox { background: var(--success-bg); border: 1px solid rgba(63,163,122,0.4); color: #1e5c40; border-radius: 10px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; }
-.warnbox { background: var(--nudge-bg); border: 1px solid rgba(179,130,44,0.5); color: var(--nudge-ink); border-radius: 10px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; }
-.backup-nudge { display: flex; align-items: center; gap: 10px; background: var(--nudge-bg); border: 1px dashed var(--amber-dark); color: var(--nudge-ink); border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.4; margin-bottom: 10px; }
-.backup-nudge .btn { flex: none; min-height: 44px; }
-.ovl { text-decoration: overline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
-.sw-row { display: flex; gap: 12px; margin-top: 12px; }
-.sw-btn { flex: 1; min-height: 96px; border: 2px solid var(--teal); background: var(--bg); color: var(--ink); border-radius: 14px; font-family: var(--mono); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.sw-btn.on { background: var(--teal); color: #fff; }
-.sw-letter { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
-.sw-val { font-size: 34px; font-weight: 700; line-height: 1; }
-.sw-state { font-size: 11px; }
-.gate-lamps { display: flex; gap: 8px; margin-top: 12px; }
-.gate-lamp { flex: 1; text-align: center; border: 1.5px solid rgba(14,42,69,0.2); border-radius: 12px; padding: 10px 4px; background: var(--bg); }
-.gate-lamp.lit { background: #FFF1C9; border-color: var(--amber-dark); }
-.gate-bulb { font-size: 28px; filter: grayscale(1); opacity: 0.35; }
-.gate-lamp.lit .gate-bulb { filter: none; opacity: 1; }
-.gate-name { font-family: var(--mono); font-weight: 700; font-size: 13px; margin-top: 2px; }
-.gate-rule { font-size: 11px; line-height: 1.35; color: var(--ink-soft); margin-top: 4px; }
-.gl-cell { text-align: center; font-family: var(--mono); font-weight: 700; font-size: 13px; padding: 12px 4px; border-radius: 8px; border: 1.5px dashed rgba(14,42,69,0.25); color: var(--ink-soft); }
-.gl-cell.found { background: var(--success-bg); border: 1.5px solid var(--success); color: #1e5c40; }
-.grid-table.tt td, .grid-table.tt th { font-size: 14px; }
-.grid-table.tt th.tt-help, .grid-table.tt td.tt-help { background: rgba(14,42,69,0.05); color: var(--ink-soft); }
-.grid-table.tt th.tt-help { background: var(--teal-dark); color: #fff; }
-.tt-btn { min-width: 48px; min-height: 44px; border-radius: 8px; border: 1.5px dashed var(--amber-dark); background: var(--bg); font-family: var(--mono); font-weight: 700; font-size: 16px; color: var(--ink); cursor: pointer; }
-.tt-btn.set { border-style: solid; border-color: var(--teal); background: #fff; }
-tr.tt-wrong td { background: var(--nudge-bg); }
 </style>
 </head>
 <body>
@@ -353,201 +327,56 @@ function climbCompositions(n) {
    STORAGE
    ========================================================= */
 
-// ==BACKUP-CORE-START==
-// Pure helpers (no page/DOM use) so verify.js can test them: safe loading, Restore Code, merge, backup bundle.
-var CH_IDS = ["ch1","ch2","ch3","ch4","ch5","ch6","ch7","ch8","ch9","ch10","ch11","ch12"];
-var BOSS_IDS = ["boss1","boss2","boss3","boss4"];
-var CODE_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";   // no I, L, O, U: nothing to mix up
-var CODE_VERSION = 1;
-var CODE_PREFIX = "CSK";
-var CODE_CHARS = 28;                                      // 140 bits = 5 version + 108 progress + 7 spare + 16 CRC + 4 pad
-
-function normalizeChapter(c) {
-  var out = { stage: 0, stars: 3, done: false, stageDone: [false,false,false,false,false] };
-  if (!c || typeof c !== "object") return out;
-  var sd = Array.isArray(c.stageDone) ? c.stageDone : [];
-  for (var i = 0; i < 5; i++) out.stageDone[i] = sd[i] === true;
-  var stars = Number(c.stars);
-  out.stars = (stars >= 1 && stars <= 3) ? Math.floor(stars) : 3;
-  var stage = Number(c.stage);
-  out.stage = (stage >= 0 && stage <= 4) ? Math.floor(stage) : 0;
-  out.done = c.done === true || out.stageDone[4] === true;
-  if (out.done) out.stageDone[4] = true;
-  return out;
-}
-// Any saved object -> a well-formed progress object. Saved values always win; junk is replaced by defaults.
-function normalizeProgress(p) {
-  var out = { chapters: {}, xp: 0, drawMemory: {} };
-  if (!p || typeof p !== "object" || Array.isArray(p)) return out;
-  var xp = Number(p.xp);
-  out.xp = (isFinite(xp) && xp >= 0) ? Math.floor(xp) : 0;
-  if (p.chapters && typeof p.chapters === "object" && !Array.isArray(p.chapters)) {
-    Object.keys(p.chapters).forEach(function (id) { out.chapters[id] = normalizeChapter(p.chapters[id]); });
-  }
-  if (p.drawMemory && typeof p.drawMemory === "object" && !Array.isArray(p.drawMemory)) {
-    Object.keys(p.drawMemory).forEach(function (id) { if (p.drawMemory[id] === true) out.drawMemory[id] = true; });
-  }
-  return out;
-}
-function normalizeErrorLog(list) {
-  var out = [];
-  if (!Array.isArray(list)) return out;
-  list.forEach(function (e) {
-    if (e && typeof e === "object" && typeof e.code === "string" && typeof e.note === "string") {
-      out.push({ code: e.code, note: e.note, ts: isFinite(Number(e.ts)) ? Number(e.ts) : 0 });
-    }
-  });
-  return out;
-}
-// How many stages are finished (60 chapter stages + 4 boss clears = 64 max)
-function countStages(p) {
-  var n = 0; p = normalizeProgress(p);
-  CH_IDS.forEach(function (id) { var c = p.chapters[id]; if (c) c.stageDone.forEach(function (d) { if (d) n++; }); });
-  BOSS_IDS.forEach(function (id) { var c = p.chapters[id]; if (c && c.done) n++; });
-  return n;
-}
-function crc16(bytes) {
-  var crc = 0xFFFF;
-  for (var k = 0; k < bytes.length; k++) {
-    crc ^= (bytes[k] << 8);
-    for (var i = 0; i < 8; i++) crc = (crc & 0x8000) ? (((crc << 1) ^ 0x1021) & 0xFFFF) : ((crc << 1) & 0xFFFF);
-  }
-  return crc;
-}
-function xpFor(stars) { return 20 + stars * 5; }
-// progress -> "CSK-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
-function encodeRestoreCode(progress) {
-  var p = normalizeProgress(progress), bits = [], i, j;
-  for (var v = 4; v >= 0; v--) bits.push((CODE_VERSION >> v) & 1);
-  CH_IDS.forEach(function (id) { var c = p.chapters[id] || normalizeChapter(null); for (i = 0; i < 5; i++) bits.push(c.stageDone[i] ? 1 : 0); });
-  BOSS_IDS.forEach(function (id) { var c = p.chapters[id]; bits.push(c && c.done ? 1 : 0); });
-  CH_IDS.concat(BOSS_IDS).forEach(function (id) {
-    var c = p.chapters[id], s = c ? c.stars : 3;          // 2 bits: stars-1 (0..2)
-    bits.push(((s - 1) >> 1) & 1, (s - 1) & 1);
-  });
-  CH_IDS.forEach(function (id) { bits.push(p.drawMemory[id] ? 1 : 0); });
-  while (bits.length < 120) bits.push(0);
-  var bytes = [];
-  for (i = 0; i < 120; i += 8) { var b = 0; for (j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; bytes.push(b); }
-  var crc = crc16(bytes); bytes.push(crc >> 8, crc & 255);
-  var all = [];
-  bytes.forEach(function (b) { for (var q = 7; q >= 0; q--) all.push((b >> q) & 1); });
-  while (all.length % 5) all.push(0);
-  var chars = "";
-  for (i = 0; i < all.length; i += 5) { var n = 0; for (j = 0; j < 5; j++) n = (n << 1) | all[i + j]; chars += CODE_ALPHABET[n]; }
-  return CODE_PREFIX + "-" + chars.match(/.{4}/g).join("-");
-}
-// text -> {ok:true, progress} (a progress-shaped object, XP recomputed) or {ok:false, reason}
-function decodeRestoreCode(text) {
-  var t = String(text == null ? "" : text).toUpperCase().replace(/[\s\-_]/g, "");
-  if (t.length === CODE_CHARS + 3 && t.slice(0, 3) === CODE_PREFIX) t = t.slice(3);
-  t = t.replace(/O/g, "0").replace(/[IL]/g, "1");
-  if (t.length !== CODE_CHARS) return { ok: false, reason: "length" };
-  var all = [], i, j;
-  for (i = 0; i < t.length; i++) {
-    var n = CODE_ALPHABET.indexOf(t.charAt(i));
-    if (n < 0) return { ok: false, reason: "chars" };
-    for (j = 4; j >= 0; j--) all.push((n >> j) & 1);
-  }
-  for (i = 136; i < 140; i++) if (all[i] !== 0) return { ok: false, reason: "checksum" };
-  var bytes = [];
-  for (i = 0; i < 136; i += 8) { var b = 0; for (j = 0; j < 8; j++) b = (b << 1) | all[i + j]; bytes.push(b); }
-  var data = bytes.slice(0, 15), crc = (bytes[15] << 8) | bytes[16];
-  if (crc16(data) !== crc) return { ok: false, reason: "checksum" };
-  var bits = [];
-  data.forEach(function (x) { for (var q = 7; q >= 0; q--) bits.push((x >> q) & 1); });
-  var version = 0; for (i = 0; i < 5; i++) version = (version << 1) | bits[i];
-  if (version !== CODE_VERSION) return { ok: false, reason: "version" };
-  var pos = 5, prog = { chapters: {}, xp: 0, drawMemory: {} };
-  CH_IDS.forEach(function (id) {
-    var c = normalizeChapter(null);
-    for (var k = 0; k < 5; k++) c.stageDone[k] = bits[pos++] === 1;
-    c.done = c.stageDone[4];
-    prog.chapters[id] = c;
-  });
-  BOSS_IDS.forEach(function (id) {
-    var c = normalizeChapter(null); c.done = bits[pos++] === 1; c.stageDone[4] = c.done; prog.chapters[id] = c;
-  });
-  CH_IDS.concat(BOSS_IDS).forEach(function (id) {
-    var s = ((bits[pos] << 1) | bits[pos + 1]) + 1; pos += 2;
-    prog.chapters[id].stars = s > 3 ? 3 : s;
-  });
-  CH_IDS.forEach(function (id) { if (bits[pos++] === 1) prog.drawMemory[id] = true; });
-  CH_IDS.concat(BOSS_IDS).forEach(function (id) {
-    var c = prog.chapters[id];
-    for (var k = 4; k >= 0; k--) if (c.stageDone[k]) { c.stage = Math.min(4, k + 1); break; }
-    if (c.done) prog.xp += xpFor(c.stars);
-  });
-  return { ok: true, progress: prog };
-}
-// Adding progress never takes progress away: a stage is done if EITHER side has it; stars and XP keep the higher value.
-function mergeProgress(current, incoming) {
-  var a = normalizeProgress(current), b = normalizeProgress(incoming), out = normalizeProgress(a);
-  Object.keys(b.chapters).forEach(function (id) {
-    var bc = b.chapters[id], ac = a.chapters[id];
-    var bHas = bc.stageDone.some(function (d) { return d; }), aHas = ac && ac.stageDone.some(function (d) { return d; });
-    var oc = ac ? out.chapters[id] : (out.chapters[id] = normalizeChapter(null));
-    for (var i = 0; i < 5; i++) oc.stageDone[i] = oc.stageDone[i] || bc.stageDone[i];
-    oc.done = oc.done || bc.done || oc.stageDone[4];
-    if (oc.done) oc.stageDone[4] = true;
-    if (bHas) oc.stars = aHas ? Math.max(ac.stars, bc.stars) : bc.stars;
-    var hi = 0; for (var k = 4; k >= 0; k--) if (oc.stageDone[k]) { hi = Math.min(4, k + 1); break; }
-    oc.stage = Math.max(oc.stage, bc.stage, hi);
-  });
-  Object.keys(out.chapters).forEach(function (id) {       // unlock every stage that is already finished
-    var oc = out.chapters[id];
-    for (var k = 4; k >= 0; k--) if (oc.stageDone[k]) { oc.stage = Math.max(oc.stage, Math.min(4, k + 1)); break; }
-  });
-  Object.keys(b.drawMemory).forEach(function (id) { out.drawMemory[id] = true; });
-  out.xp = Math.max(a.xp, b.xp);
-  return out;
-}
-function mergeErrorLogs(current, incoming) {
-  var a = normalizeErrorLog(current), b = normalizeErrorLog(incoming), seen = {}, out = [];
-  a.concat(b).forEach(function (e) { var key = e.ts + "|" + e.code + "|" + e.note; if (!seen[key]) { seen[key] = true; out.push(e); } });
-  out.sort(function (x, y) { return x.ts - y.ts; });
-  return out;
-}
-// A gentle reminder: only after 5 or more new finished stages since the last backup (never by calendar, never red).
-function backupDue(stagesNow, meta) {
-  var last = meta && isFinite(Number(meta.stages)) ? Number(meta.stages) : 0;
-  return stagesNow - last >= 5;
-}
-function buildBundle(progress, errorLog, whenISO) {
-  var p = normalizeProgress(progress);
-  return JSON.stringify({ app: "jj-combinatorics-backup", version: 1, exportedAt: whenISO,
-    code: encodeRestoreCode(p), progress: p, errorLog: normalizeErrorLog(errorLog) }, null, 2);
-}
-// Reads and cleans a backup file. Returns {ok, progress, errorLog, exportedAt} or {ok:false, reason}
-function readBundle(text) {
-  var parsed;
-  try { parsed = JSON.parse(text); } catch (e) { return { ok: false, reason: "json" }; }
-  if (!parsed || typeof parsed !== "object" || parsed.app !== "jj-combinatorics-backup" || !parsed.progress || typeof parsed.progress !== "object") return { ok: false, reason: "shape" };
-  var prog = normalizeProgress(parsed.progress);
-  var log = normalizeErrorLog(parsed.errorLog);
-  if (countStages(prog) === 0 && log.length === 0 && prog.xp === 0) return { ok: false, reason: "empty" };
-  return { ok: true, progress: prog, errorLog: log, exportedAt: typeof parsed.exportedAt === "string" ? parsed.exportedAt : null };
-}
-// ==BACKUP-CORE-END==
-
 var STORE_KEY = "cs_progress_v1";
 var ERR_KEY = "cs_errorlog_v1";
-var META_KEY = "cs_backup_meta_v1";        // {stages, at}: what was backed up last (never touches progress)
-var SNAP_KEY = "cs_prerestore_v1";         // one undo snapshot, written just before a restore
 
-var storageOk = true;
-function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { storageOk = false; return null; } }
-function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { storageOk = false; return false; } }
-function lsJson(k) { var raw = lsGet(k); if (!raw) return null; try { return JSON.parse(raw); } catch (e) { return null; } }
-(function () { try { localStorage.setItem("cs_probe", "1"); localStorage.removeItem("cs_probe"); } catch (e) { storageOk = false; } })();
-try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}   // ask the browser to keep our data
-
-function loadProgress() { return normalizeProgress(lsJson(STORE_KEY)); }
-function saveProgress(p) { lsSet(STORE_KEY, JSON.stringify(p)); }
-function loadErrorLog() { return normalizeErrorLog(lsJson(ERR_KEY)); }
-function saveErrorLog(list) { lsSet(ERR_KEY, JSON.stringify(list)); }
-function loadBackupMeta() { var m = lsJson(META_KEY); return (m && typeof m === "object") ? m : null; }
-function markBackedUp() { lsSet(META_KEY, JSON.stringify({ stages: countStages(PROGRESS), at: Date.now() })); }
+function isPlainObject(o) { return !!o && typeof o === "object" && !Array.isArray(o); }
+/* Turns ANY parsed value into a safe progress object, so a damaged or half-written save can never white-screen the app. */
+function sanitizeProgress(p) {
+  var out = { chapters: {}, xp: 0, drawMemory: {} };
+  if (!isPlainObject(p)) return out;
+  if (typeof p.xp === "number" && isFinite(p.xp) && p.xp >= 0) out.xp = p.xp;
+  if (isPlainObject(p.drawMemory)) {
+    Object.keys(p.drawMemory).forEach(function (k) { if (p.drawMemory[k] === true) out.drawMemory[k] = true; });
+  }
+  if (isPlainObject(p.chapters)) {
+    Object.keys(p.chapters).forEach(function (id) {
+      var c = p.chapters[id];
+      if (!isPlainObject(c)) return;
+      var stars = Number(c.stars);
+      if (!isFinite(stars)) stars = 3;
+      stars = Math.min(3, Math.max(1, Math.round(stars)));
+      var stage = Number(c.stage);
+      if (!isFinite(stage)) stage = 0;
+      stage = Math.min(4, Math.max(0, Math.floor(stage)));
+      var sd = [];
+      for (var i = 0; i < 5; i++) sd.push(Array.isArray(c.stageDone) && c.stageDone[i] === true);
+      out.chapters[id] = { stage: stage, stars: stars, done: c.done === true, stageDone: sd };
+    });
+  }
+  return out;
+}
+function loadProgress() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    return sanitizeProgress(raw ? JSON.parse(raw) : null);
+  } catch (e) { return sanitizeProgress(null); }
+}
+var storageFailed = false;   // true when the browser refuses to save (private mode, full, blocked)
+function saveProgress(p) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(p)); storageFailed = false; } catch (e) { storageFailed = true; }
+}
+function loadErrorLog() {
+  try {
+    var raw = localStorage.getItem(ERR_KEY);
+    var list = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (e) { return isPlainObject(e) && typeof e.code === "string" && typeof e.note === "string"; });
+  } catch (e) { return []; }
+}
+function saveErrorLog(list) {
+  try { localStorage.setItem(ERR_KEY, JSON.stringify(list)); } catch (e) {}
+}
 
 var PROGRESS = loadProgress();
 
@@ -564,8 +393,9 @@ function useHint(chId) {
 }
 function markStageDone(chId, stageIdx) {
   var st = getChapterState(chId);
+  var firstFinish = (stageIdx === 4 && !st.done);   // replaying a finished chapter must not farm XP
   st.stageDone[stageIdx] = true;
-  if (stageIdx === 4) { st.done = true; PROGRESS.xp = (PROGRESS.xp || 0) + 20 + (st.stars * 5); }
+  if (stageIdx === 4) { st.done = true; if (firstFinish) PROGRESS.xp = (PROGRESS.xp || 0) + 20 + (st.stars * 5); }
   saveProgress(PROGRESS);
   refreshChapterNav();
 }
@@ -575,6 +405,193 @@ function markStageDone(chId, stageIdx) {
    ========================================================= */
 
 var route = { view: "home", chapterId: null, stage: 0 };
+
+
+/* =========================================================
+   BACKUP SYSTEM (Ship's Log) — export / preview / restore
+   ========================================================= */
+
+var DRAW_KEY = "cs_drawings_v1";
+var DRAW_MAX = 400000;   // characters per saved drawing
+function cleanDrawings(o) {
+  var out = {};
+  if (!isPlainObject(o)) return out;
+  Object.keys(o).forEach(function (id) {
+    var v = o[id];
+    if (/^(ch(1[0-2]|[1-9]))$/.test(id) && typeof v === "string" && v.length <= DRAW_MAX &&
+        /^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(v)) out[id] = v;
+  });
+  return out;
+}
+function loadDrawings() {
+  try { return cleanDrawings(JSON.parse(localStorage.getItem(DRAW_KEY) || "null")); } catch (e) { return {}; }
+}
+function saveDrawings(d) {
+  try { localStorage.setItem(DRAW_KEY, JSON.stringify(d)); return true; } catch (e) { return false; }
+}
+
+var BACKUP_APP = "jj-combinatorics-sketchbook-backup";
+var BACKUP_META_KEY = "cs_backup_meta_v1";
+var BACKUP_REMIND_DAYS = 7;
+
+function backupStats(p) {
+  var chaptersDone = 0, bossesDone = 0;
+  Object.keys(p.chapters).forEach(function (id) {
+    if (!p.chapters[id].done) return;
+    if (id.indexOf("boss") === 0) bossesDone++; else chaptersDone++;
+  });
+  return { chapters: chaptersDone, bosses: bossesDone, xp: p.xp };
+}
+function hasAnyProgress() {
+  var st = backupStats(PROGRESS);
+  var started = Object.keys(PROGRESS.chapters).some(function (id) {
+    var c = PROGRESS.chapters[id]; return c.stage > 0 || c.done || c.stageDone.some(Boolean);
+  });
+  return started || st.xp > 0 || loadErrorLog().length > 0 || Object.keys(loadDrawings()).length > 0;
+}
+function getBackupMeta() {
+  try {
+    var m = JSON.parse(localStorage.getItem(BACKUP_META_KEY) || "null");
+    if (isPlainObject(m) && typeof m.last === "string" && isFinite(Date.parse(m.last))) return m;
+  } catch (e) {}
+  return null;
+}
+function setBackupMeta() {
+  try { localStorage.setItem(BACKUP_META_KEY, JSON.stringify({ last: new Date().toISOString() })); } catch (e) {}
+}
+function backupAgeDays() {
+  var m = getBackupMeta();
+  return m ? Math.floor((Date.now() - Date.parse(m.last)) / 86400000) : null;
+}
+
+function buildBackup() {
+  var d = new Date();
+  var bundle = {
+    app: BACKUP_APP, version: 1, exportedAt: d.toISOString(),
+    progress: PROGRESS, errorLog: loadErrorLog(), drawings: loadDrawings()
+  };
+  var stamp = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  return { text: JSON.stringify(bundle, null, 2), fileName: "jj-combinatorics-backup-" + stamp + ".json", when: d };
+}
+
+/* Reads a backup file's text. Returns { ok:true, progress, errorLog, exportedAt } or { ok:false, msg }. */
+function parseBackup(text) {
+  var obj;
+  try { obj = JSON.parse(text); } catch (e) { return { ok: false, msg: "That file isn't valid JSON, so I couldn't read it." }; }
+  if (!isPlainObject(obj) || obj.app !== BACKUP_APP || !isPlainObject(obj.progress)) {
+    return { ok: false, msg: "That doesn't look like a Combinatorics Sketchbook backup." };
+  }
+  var log = Array.isArray(obj.errorLog) ? obj.errorLog.filter(function (e) {
+    return isPlainObject(e) && typeof e.code === "string" && typeof e.note === "string";
+  }).map(function (e) { return { code: e.code, note: e.note.slice(0, 500), ts: Number(e.ts) || 0 }; }) : [];
+  return { ok: true, progress: sanitizeProgress(obj.progress), errorLog: log, drawings: cleanDrawings(obj.drawings), exportedAt: obj.exportedAt };
+}
+
+function applyBackup(parsed) {
+  PROGRESS = parsed.progress;
+  saveProgress(PROGRESS);
+  saveErrorLog(parsed.errorLog);
+  saveDrawings(parsed.drawings || {});
+  return !storageFailed;
+}
+
+function backupCardHtml() {
+  var age = backupAgeDays();
+  var meta = age === null ? "No backup exported yet." :
+    "Last backup: " + (age === 0 ? "today" : age === 1 ? "yesterday" : age + " days ago") + ".";
+  var h = '<div class="section"><div class="mission-card">';
+  h += '<div class="mission-name">📋 Ship\'s Log — Backup &amp; Restore</div>';
+  h += '<div class="mission-desc" style="line-height:1.5">Your progress lives on this iPad only. Save a backup file now and then. If anything gets wiped, one tap brings it all back. On iPad choose “Save to Files”.</div>';
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" id="bk-export" style="flex:1;min-height:48px">⬇ Save a Backup</button>';
+  h += '<label class="btn" for="bk-file" style="flex:1;min-height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer">⬆ Restore a Backup</label>';
+  h += '<input type="file" id="bk-file" accept="application/json,.json" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"></div>';
+  h += '<div class="mission-visits" id="bk-meta">' + meta + '</div>';
+  h += '<div id="bk-status"></div><div id="bk-preview"></div>';
+  h += '</div></div>';
+  return h;
+}
+
+function bkStatus(msg, kind) {
+  var el = document.getElementById("bk-status");
+  if (el) el.innerHTML = '<div class="feedback show ' + kind + '" style="margin-top:6px">' + msg + '</div>';
+}
+
+function wireBackupUi() {
+  var exp = document.getElementById("bk-export");
+  var fileIn = document.getElementById("bk-file");
+  if (!exp || !fileIn) return;
+  function done(when) {
+    setBackupMeta();
+    var m = document.getElementById("bk-meta"); if (m) m.textContent = "Last backup: today (" + when.toLocaleTimeString() + ").";
+    var n = document.getElementById("bk-nudge"); if (n) n.style.display = "none";
+  }
+  function download(b) {
+    var blob = new Blob([b.text], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = b.fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    done(b.when); bkStatus("✅ Backup file created. Keep it somewhere safe (Files, email or a cloud drive).", "ok");
+  }
+  exp.onclick = function () {
+    if (!hasAnyProgress()) { bkStatus("Nothing to save yet. Do Step 1 of a chapter first, then come back.", "no"); return; }
+    var b = buildBackup(), file = null;
+    try { file = new File([b.text], b.fileName, { type: "application/json" }); } catch (e) {}
+    var canShare = false;
+    try { canShare = !!(file && navigator.share && navigator.canShare && navigator.maxTouchPoints > 0 && navigator.canShare({ files: [file] })); } catch (e) {}
+    if (!canShare) { download(b); return; }
+    navigator.share({ files: [file], title: "J.J.'s Combinatorics backup" }).then(function () {
+      done(b.when); bkStatus("✅ Backup shared. Check you picked a safe place (Save to Files).", "ok");
+    }).catch(function (err) {
+      if (err && err.name === "AbortError") bkStatus("Share cancelled. No backup was saved. Tap again when you're ready.", "no");
+      else download(b);
+    });
+  };
+  fileIn.onchange = function (e) {
+    var f = e.target.files && e.target.files[0];
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var res = parseBackup(String(r.result));
+      fileIn.value = "";
+      var box = document.getElementById("bk-preview");
+      if (!res.ok) { box.innerHTML = ""; bkStatus(res.msg, "no"); return; }
+      var inc = backupStats(res.progress), now = backupStats(PROGRESS);
+      var when = res.exportedAt && isFinite(Date.parse(res.exportedAt)) ? new Date(res.exportedAt).toLocaleString() : "unknown date";
+      var h = '<div class="callout engineer" style="margin-top:10px"><strong>This backup has:</strong><br>' +
+        inc.chapters + ' of 12 chapters done · ' + inc.bosses + ' of 4 Boss Battles · ' + inc.xp + ' XP · ' + res.errorLog.length + ' Error Log entries · ' + Object.keys(res.drawings).length + ' saved drawings<br>' +
+        '<span style="color:var(--ink-soft)">Saved: ' + escapeHtml(when) + '</span></div>';
+      if (now.xp > inc.xp || now.chapters > inc.chapters) {
+        h += '<div class="feedback show no" style="margin-top:8px">⚠ This iPad has MORE progress right now (' + now.chapters + ' chapters, ' + now.xp + ' XP). Restoring replaces it. Save a backup first if unsure.</div>';
+      }
+      h += '<div style="display:flex;gap:10px;margin-top:10px"><button class="btn" id="bk-cancel" style="flex:1;min-height:48px">Cancel</button>' +
+        '<button class="btn primary" id="bk-confirm" style="flex:1;min-height:48px">Restore This Backup</button></div>';
+      box.innerHTML = h;
+      document.getElementById("bk-cancel").onclick = function () { box.innerHTML = ""; };
+      document.getElementById("bk-confirm").onclick = function () {
+        var ok = applyBackup(res);
+        if (ok) { nav("home"); setTimeout(function () { bkStatus("✅ Progress restored. Welcome back, Chief Engineer!", "ok"); }, 0); }
+        else { box.innerHTML = ""; bkStatus("This browser wouldn't let me save. Open the app from its normal web address (not a private tab) and try again.", "no"); }
+      };
+    };
+    r.onerror = function () { bkStatus("I couldn't read that file. Try picking it again.", "no"); };
+    r.readAsText(f);
+  };
+}
+
+/* In-page celebration (alert() boxes are blocked or ugly in iPad home-screen apps). */
+function showVictory(msg) {
+  var old = document.getElementById("victory-overlay"); if (old) old.remove();
+  var d = document.createElement("div");
+  d.id = "victory-overlay";
+  d.setAttribute("role", "dialog");
+  d.style.cssText = "position:fixed;inset:0;z-index:999;background:rgba(8,24,38,0.82);display:flex;align-items:center;justify-content:center;padding:20px";
+  d.innerHTML = '<div class="boss-card" style="max-width:420px;text-align:center;border-color:var(--amber)">' +
+    '<div class="boss-title" style="font-size:20px">' + msg + '</div>' +
+    '<button class="btn primary" id="victory-ok" style="margin-top:16px;width:100%;min-height:48px">Back to the Chart Room ›</button></div>';
+  document.body.appendChild(d);
+  document.getElementById("victory-ok").onclick = function () { d.remove(); nav("home"); };
+}
 
 function nav(view, chapterId, stage) {
   route = { view: view, chapterId: chapterId || null, stage: stage || 0 };
@@ -646,11 +663,6 @@ var CHAPTERS = [
     id: "ch12", part: "D", num: 12, emoji: "🧰",
     title: "Chief Engineer's Toolkit",
     subtitle: "All 8 tools, tool-detective practice, and the final ladder"
-  },
-  {
-    id: "ch13", part: "E", num: 13, emoji: "🚪",
-    title: "Watertight Door Gates",
-    subtitle: "Bridge switches, signal lamps and the truth table"
   }
 ];
 
@@ -728,15 +740,14 @@ var PARTS = [
   { key: "A", title: "PART A &middot; Boiler Room Basics", sub: "Counting foundations — before any formula.", boss: BOSS1 },
   { key: "B", title: "PART B &middot; Engine Design Choices", sub: "Addition, Multiplication, Permutations &amp; Combinations.", boss: BOSS2 },
   { key: "C", title: "PART C &middot; Blueprint Restrictions", sub: "Restrictions, Complementary Counting &amp; Recursion.", boss: BOSS3 },
-  { key: "D", title: "PART D &middot; Chief Engineer's Toolkit", sub: "All 8 tools together — the final checkpoint.", boss: BOSS4 },
-  { key: "E", title: "PART E &middot; Unseen Lab (bonus wing)", sub: "Exam-style stories: the rules arrive inside the problem.", boss: null, bonus: true }
+  { key: "D", title: "PART D &middot; Chief Engineer's Toolkit", sub: "All 8 tools together — the final checkpoint.", boss: BOSS4 }
 ];
 var LOCKED_PARTS = [];
 
 function chapterProgressStats() {
-  var done = 0, total = 0;
-  CHAPTERS.forEach(function (c) { if (c.part === "E") return; total++; if (getChapterState(c.id).done) done++; });   // Part E is a bonus wing: not in the main bar
-  PARTS.forEach(function (p) { if (!p.boss) return; total++; if (getChapterState(p.boss.id).done) done++; });
+  var done = 0, total = CHAPTERS.length + PARTS.length;
+  CHAPTERS.forEach(function (c) { if (getChapterState(c.id).done) done++; });
+  PARTS.forEach(function (p) { if (getChapterState(p.boss.id).done) done++; });
   return { done: done, total: total };
 }
 
@@ -758,7 +769,6 @@ function renderPartSection(part) {
     html += '</div>';
   });
 
-  if (!part.boss) { html += '</div></div>'; return html; }
   var bossSt = getChapterState(part.boss.id);
   var allChDone = chapters.every(function (c) { return getChapterState(c.id).done; });
   html += '<div class="mission-card' + (allChDone ? '' : ' locked') + '">';
@@ -788,6 +798,15 @@ function renderHome() {
   html += '<div class="voyage-card"><div class="voyage-row"><span>CHAPTERS &amp; BOSS BATTLES CLEARED</span><span class="num">' + stats.done + ' / ' + stats.total + '</span></div>';
   html += '<div class="voyage-track"><div class="voyage-fill" style="width:' + pct + '%"></div></div></div></div>';
 
+  if (storageFailed) {
+    html += '<div class="section"><div class="feedback show no">⚠ This browser is not saving your progress (private tab or blocked storage). Open the app in a normal tab, or save a backup file before you leave.</div></div>';
+  }
+  var bkAge = backupAgeDays();
+  if (hasAnyProgress() && (bkAge === null || bkAge >= BACKUP_REMIND_DAYS)) {
+    html += '<div class="section"><div class="callout engineer" id="bk-nudge">💾 <strong>Quick Step 1:</strong> save a backup file ' +
+      (bkAge === null ? 'so your progress is safe.' : '(your last one was ' + bkAge + ' days ago).') + ' It takes one tap. Scroll down to the Ship\'s Log.</div></div>';
+  }
+
   PARTS.forEach(function (part) { html += renderPartSection(part); });
 
   LOCKED_PARTS.forEach(function (lp) {
@@ -809,17 +828,15 @@ function renderHome() {
   html += '</div></div>';
 
   html += '<div class="section">';
-  if (!storageOk) html += '<div class="warnbox" style="margin-bottom:10px"><strong>Progress can\u2019t be saved in this mode.</strong> Open the website in normal Safari.</div>';
-  if (backupDue(countStages(PROGRESS), loadBackupMeta())) {
-    html += '<div class="backup-nudge"><span>\uD83D\uDCD3 New stages since your last backup. Saving takes 30 seconds.</span><button class="btn small" onclick="CSApp.nav(\'shiplog\')">Save</button></div>';
-  }
   html += '<button class="btn" style="width:100%" onclick="CSApp.nav(\'errorlog\')">🔥 Open Error Log</button>';
-  html += '<button class="btn" style="width:100%;margin-top:10px" onclick="CSApp.nav(\'shiplog\')">\uD83D\uDCD3 Ship\u2019s Log: save &amp; restore</button>';
   html += '</div>';
+
+  html += backupCardHtml();
 
   html += '<div class="foot-note">Progress saved on this device under <code>' + STORE_KEY + '</code>. Part of J.J.\'s Engineering Academy.</div>';
 
   document.getElementById("app").innerHTML = html;
+  wireBackupUi();
 }
 
 /* =========================================================
@@ -894,6 +911,16 @@ function categorizedPoolVisualHtml(groupA, groupALabel, groupAColor, groupB, gro
   html += '</div>';
   return html;
 }
+
+/* Empty role slots: shows WHO needs filling, never the count. */
+function slotsVisualHtml(labels, note) {
+  var h = '<div class="slot-row">';
+  labels.forEach(function (l) { h += '<div class="slot-box">' + l + '</div>'; });
+  h += '</div>';
+  if (note) h += '<div style="text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--amber);margin-top:6px">' + note + '</div>';
+  return h;
+}
+var OFFICERS5 = ["A","B","C","D","E"];
 
 function listBuilderWidget(containerId, items, k, mode, chId, onAllFound) {
   var target = mode === 'combo' ? kCombinations(items, k) : (mode === 'perm' ? kPermutations(items, k) : kSequences(items, k));
@@ -1253,7 +1280,10 @@ function guidedExplanationWidget(containerId, chId, stageIdx, tokens) {
         row.appendChild(chip);
       });
     } else {
-      document.getElementById(containerId + "-done").onclick = function () { markStageDone(chId, stageIdx); render(); };
+      document.getElementById(containerId + "-done").onclick = function () {
+        markStageDone(chId, stageIdx);
+        this.disabled = true; this.textContent = "✓ Done — tap Next Stage ›";
+      };
     }
     var resetBtn = document.getElementById(containerId + "-reset");
     if (resetBtn) resetBtn.onclick = function () { filled = new Array(blankTokens.length).fill(null); current = 0; drawGuided(); };
@@ -1267,7 +1297,10 @@ function guidedExplanationWidget(containerId, chId, stageIdx, tokens) {
     html += '<button class="btn small" id="' + containerId + '-back">← Back to tap-to-build</button>';
     html += '</div>';
     document.getElementById(containerId).innerHTML = html;
-    document.getElementById(containerId + "-donefree").onclick = function () { markStageDone(chId, stageIdx); render(); };
+    document.getElementById(containerId + "-donefree").onclick = function () {
+      markStageDone(chId, stageIdx);
+      this.disabled = true; this.textContent = "✓ Done — tap Next Stage ›";
+    };
     document.getElementById(containerId + "-back").onclick = function () { freeMode = false; drawGuided(); };
   }
 
@@ -1276,49 +1309,97 @@ function guidedExplanationWidget(containerId, chId, stageIdx, tokens) {
 
 /* ---------- Progressive hint widget (stacking hints, last level always states the answer) ---------- */
 /* levels: array of { label: '💡 Hint 1', html: '...' } */
-var stageHintFn = null;   // set by the current stage's hint widget; the global hint button calls it
 function progressiveHintWidget(containerId, chId, levels) {
   var shown = 0;
-  function advance() {
-    if (shown >= levels.length || !document.getElementById(containerId)) return false;
-    if (shown > 0) useHint(chId);
-    shown++;
-    draw();
-    return true;
-  }
-  stageHintFn = advance;
   function draw() {
     var html = "";
     for (var i = 0; i < shown; i++) {
       html += '<div class="callout engineer" style="margin-top:10px"><strong>' + levels[i].label + '</strong><br>' + levels[i].html + '</div>';
     }
     if (shown < levels.length) {
-      html += '<button class="btn small amber" id="' + containerId + '-next" style="margin-top:10px">' + (shown === 0 ? "💡 Need a hint?" : "💡 Next hint (uses a star)") + '</button>';
+      html += '<button class="btn small amber" id="' + containerId + '-next" style="margin-top:10px">' + (shown === 0 ? "💡 Need a hint?" : (shown === levels.length - 1 ? "💡 Show the answer (uses a star)" : "💡 Next hint (uses a star)")) + '</button>';
     }
     document.getElementById(containerId).innerHTML = html;
     var btn = document.getElementById(containerId + "-next");
-    if (btn) btn.onclick = function () { advance(); };
+    if (btn) btn.onclick = function () {
+      if (shown > 0) useHint(chId);
+      shown++;
+      draw();
+    };
   }
   draw();
 }
 
-/* ---------- Generic answer-check widget ---------- */
-function answerCheckWidget(containerId, correctValue, onCorrect) {
+/* Auto-built 3-level hint ladder (strategy -> set-up -> the answer), chosen by the kind of stage the check lives in.
+   House rule: the final level states the answer outright, so nobody is ever stuck. */
+function autoHintLevels(containerId, correctValue) {
+  var kind = "generic";
+  if (/^boss/.test(containerId)) kind = "boss";
+  else if (/-s4-check2$/.test(containerId)) kind = "stretch";
+  else if (/-s4-check1$/.test(containerId)) kind = "cambridge";
+  else if (/-s0-/.test(containerId)) kind = "visual";
+  else if (/-s1-|-c\d+$/.test(containerId)) kind = "strategy";
+  else if (/-s2-/.test(containerId)) kind = "rule";
+  var L = {
+    visual:   ["Step 1 beats perfection: point at ONE object, then the next, and count out loud.",
+               "Cross off each one as you count it, so nothing gets counted twice."],
+    strategy: ["Shrink it! Try a tiny version (2 or 3 items) and list every case by hand. Then spot the pattern.",
+               "Go row by row: fix the first choice, list everything that can follow it, then move to the next first choice."],
+    rule:     ["Use the rule you just discovered. What do you multiply (or add) for each choice?",
+               "Write one number per choice (multiply) or per case (add). Does each pick use up an option? Then the next number is smaller."],
+    cambridge:["Engineer's checklist: (1) does order matter? (2) can things repeat? (3) is anyone restricted? Answer those three first.",
+               "Pick your tool from the checklist, write the number sentence, THEN calculate."],
+    stretch:  ["Start from your Cambridge answer. The special rule removes some cases or changes one choice. Which one?",
+               "Handle the restricted choice FIRST (it has the fewest options), then fill the rest freely. Or count everything and subtract the forbidden cases."],
+    boss:     ["Boss tip: take ONE step at a time. Each answer feeds the next step.",
+               "Name the tool for this step (multiply choices, shrink the pool, divide by orderings, or restriction). Write the number sentence, then calculate."],
+    generic:  ["Step 1: make a tiny version of the problem and count it by hand.",
+               "Write the count as a number sentence, then check it against your tiny version."]
+  };
+  var pair = L[kind];
+  return [
+    { label: "💡 Hint 1 — Strategy", html: pair[0] },
+    { label: "💡 Hint 2 — Set it up", html: pair[1] },
+    { label: "💡 Hint 3 — The answer", html: "The answer is <strong>" + correctValue + "</strong>. Type it in to move on, then ask yourself: how did the numbers get to " + correctValue + "? That is the real win." }
+  ];
+}
+
+/* ---------- Generic answer-check widget (with built-in layered hints) ---------- */
+function answerCheckWidget(containerId, correctValue, onCorrect, opts) {
+  opts = opts || {};
+  var wrong = 0, solved = false;
   var html = '<div class="answer-row"><input type="number" id="' + containerId + '-input" placeholder="Your count" />';
   html += '<button class="btn primary small" id="' + containerId + '-check">Check</button></div>';
   html += '<div class="feedback" id="' + containerId + '-fb"></div>';
+  if (!opts.noHints) html += '<div id="' + containerId + '-hints"></div>';
   document.getElementById(containerId).innerHTML = html;
+  if (!opts.noHints) {
+    var m = /^(ch\d+|boss\d+)/.exec(containerId);
+    progressiveHintWidget(containerId + "-hints", m ? m[1] : containerId, autoHintLevels(containerId, correctValue));
+  }
   document.getElementById(containerId + "-check").onclick = function () {
-    var v = parseInt(document.getElementById(containerId + "-input").value, 10);
+    if (solved) return;
+    var raw = document.getElementById(containerId + "-input").value;
+    var v = parseInt(raw, 10);
     var fb = document.getElementById(containerId + "-fb");
     fb.className = "feedback show";
-    if (v === correctValue) {
+    if (raw === "" || isNaN(v)) {
+      fb.classList.add("no");
+      fb.textContent = "Type a number first. Any guess is a fine Step 1: engineers test, then adjust.";
+    } else if (v === correctValue) {
+      solved = true;
       fb.classList.add("ok");
       fb.textContent = "✅ Correct — " + correctValue + ". Nice counting.";
+      document.getElementById(containerId + "-input").disabled = true;
+      document.getElementById(containerId + "-check").disabled = true;
+      var hb = document.getElementById(containerId + "-hints"); if (hb) hb.innerHTML = "";
       if (onCorrect) onCorrect();
     } else {
+      wrong++;
       fb.classList.add("no");
-      fb.textContent = "Not quite. Try recounting systematically — nothing skipped, nothing doubled.";
+      fb.textContent = wrong >= 2
+        ? "Not yet, and that's normal: engineers iterate. Tap 💡 for a hint, then try again."
+        : "Not quite. Try recounting systematically: nothing skipped, nothing doubled.";
     }
   };
 }
@@ -1464,13 +1545,23 @@ function (chId, root) {
   html += '<div class="concept-body">';
   html += '<p>Four deck officers — A, B, C, D — need pairing for the night watch: a <strong>first watch</strong> officer and a <strong>second watch</strong> officer. Order matters (first watch ≠ second watch).</p>';
   html += '<div class="item-row" id="ch2-s0-items"></div>';
+  html += '<div class="callout" id="ch2-s0-msg">Tap an officer to put them on first watch.</div>';
   html += '<p style="margin-top:12px">If <strong>A</strong> takes first watch, how many officers could take second watch?</p>';
   html += '<div id="ch2-s0-check"></div>';
   html += '</div>';
   root.innerHTML = html;
   var row = document.getElementById("ch2-s0-items");
+  var msg = document.getElementById("ch2-s0-msg");
   officers.forEach(function (o) {
     var chip = document.createElement("div"); chip.className = "item-chip"; chip.textContent = o;
+    chip.onclick = function () {
+      Array.prototype.forEach.call(row.children, function (c) {
+        c.classList.remove("picked"); c.classList.toggle("partner", c !== chip);
+      });
+      chip.classList.add("picked");
+      msg.textContent = o + " is on first watch. The glowing officers can take second watch. " +
+        (o === "A" ? "Now count them below!" : "Try A next, then answer the question below.");
+    };
     row.appendChild(chip);
   });
   answerCheckWidget("ch2-s0-check", 3, function () { markStageDone(chId, 0); });
@@ -2228,7 +2319,7 @@ function (chId, root) {
     { label: "💡 Hint 3 — Step 2 + 3, full answer", html: "Each team of 2 (like officers P and Q) can be ordered 2 ways: P-then-Q, or Q-then-P. That's 2! = 2. So Teams = 30 &divide; 2 = <strong>15</strong>. Type 15 below to finish." }
   ]);
 
-  answerCheckWidget("ch8-s2-check", 15, function () { markStageDone(chId, 2); });
+  answerCheckWidget("ch8-s2-check", 15, function () { markStageDone(chId, 2); }, { noHints: true });
 },
 
 function (chId, root) {
@@ -2745,254 +2836,7 @@ function (chId, root) {
 }
 ];
 
-/* =========================================================
-   CHAPTER 13 — Watertight Door Gates  (Part E, bonus wing: "Unseen Lab")
-   Exam-style: the rules arrive inside the story. 1 = switch ON, 0 = OFF.
-   ========================================================= */
-
-function ov(x) { return '<span class="ovl">' + x + '</span>'; }   // a bar over a letter means NOT
-
-/* Stage 1 widget: a bridge switchboard. Tap the switches, watch three lamps.
-   Mission: light the OR lamp with every different setting (each new one is logged). */
-function switchboardWidget(containerId, onAllFound) {
-  var sw = { A: 0, B: 0 };
-  var found = { "1,0": false, "0,1": false, "1,1": false };
-  var order = ["1,0", "0,1", "1,1"];
-  var foundCount = 0, finished = false;
-
-  function lampHtml(name, lit, rule) {
-    return '<div class="gate-lamp' + (lit ? ' lit' : '') + '"><div class="gate-bulb">💡</div><div class="gate-name">' + name + '</div><div class="gate-rule">' + rule + '</div></div>';
-  }
-  function draw() {
-    var a = sw.A, b = sw.B;
-    var html = '<div class="sw-row">';
-    ["A", "B"].forEach(function (k) {
-      html += '<button class="sw-btn' + (sw[k] ? ' on' : '') + '" data-sw="' + k + '"><span class="sw-letter">Switch ' + k + '</span><span class="sw-val">' + sw[k] + '</span><span class="sw-state">' + (sw[k] ? "ON (flag up)" : "OFF (flag down)") + '</span></button>';
-    });
-    html += '</div><div class="gate-lamps">';
-    html += lampHtml("AND", a && b, "A · B<br>lit only if BOTH are 1");
-    html += lampHtml("OR", a || b, "A + B<br>lit if AT LEAST ONE is 1");
-    html += lampHtml("NOT A", !a, ov("A") + "<br>flips: lit if A is 0");
-    html += '</div>';
-    html += '<div class="lb-progress" style="margin-top:12px">OR lamp settings found: ' + foundCount + ' / 3</div>';
-    html += '<div class="lb-grid" style="grid-template-columns:repeat(3,1fr)">';
-    order.forEach(function (key) {
-      var p = key.split(",");
-      html += '<div class="gl-cell' + (found[key] ? ' found' : '') + '">' + (found[key] ? ('A=' + p[0] + ', B=' + p[1]) : '?') + '</div>';
-    });
-    html += '</div>';
-    document.getElementById(containerId).innerHTML = html;
-    Array.prototype.forEach.call(document.getElementById(containerId).querySelectorAll(".sw-btn"), function (btn) {
-      btn.onclick = function () {
-        var k = btn.getAttribute("data-sw");
-        sw[k] = sw[k] ? 0 : 1;
-        var key = sw.A + "," + sw.B;
-        if ((sw.A || sw.B) && found[key] === false) { found[key] = true; foundCount++; }
-        draw();
-        if (foundCount === 3 && !finished) { finished = true; if (onAllFound) onAllFound(); }
-      };
-    });
-  }
-  draw();
-}
-
-/* Stage 3 widget: fill the lamp column of a truth table. Helper columns are shown; tap a ? to cycle 0 / 1. */
-function truthTableWidget(containerId, rows, helpers, finalHtml, finalFn, onSolved) {
-  var vals = rows.map(function () { return null; });
-  var wrong = {};
-  function draw(msg, kind) {
-    var html = '<table class="grid-table tt"><thead><tr><th>A</th><th>B</th><th>C</th>';
-    helpers.forEach(function (h) { html += '<th class="tt-help">' + h.label + '</th>'; });
-    html += '<th>' + finalHtml + '</th></tr></thead><tbody>';
-    rows.forEach(function (r, i) {
-      html += '<tr' + (wrong[i] ? ' class="tt-wrong"' : '') + '><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td>';
-      helpers.forEach(function (h) { html += '<td class="tt-help">' + h.fn(r[0], r[1], r[2]) + '</td>'; });
-      html += '<td><button class="tt-btn' + (vals[i] === null ? '' : ' set') + '" data-row="' + i + '">' + (vals[i] === null ? '?' : vals[i]) + '</button></td></tr>';
-    });
-    html += '</tbody></table>';
-    html += '<button class="btn primary small" id="' + containerId + '-check" style="margin-top:12px">Check my table</button>';
-    html += '<div class="feedback' + (msg ? ' show ' + kind : '') + '" id="' + containerId + '-fb">' + (msg || '') + '</div>';
-    document.getElementById(containerId).innerHTML = html;
-    Array.prototype.forEach.call(document.getElementById(containerId).querySelectorAll(".tt-btn"), function (btn) {
-      btn.onclick = function () {
-        var i = parseInt(btn.getAttribute("data-row"), 10);
-        vals[i] = (vals[i] === null) ? 0 : (vals[i] ? 0 : 1);
-        wrong = {};
-        draw();
-      };
-    });
-    document.getElementById(containerId + "-check").onclick = check;
-  }
-  function check() {
-    var empty = vals.filter(function (v) { return v === null; }).length;
-    if (empty) { wrong = {}; draw("Tap every ? first (" + empty + " left), then check.", "no"); return; }
-    var bad = 0; wrong = {};
-    rows.forEach(function (r, i) { if (vals[i] !== finalFn(r[0], r[1], r[2])) { wrong[i] = true; bad++; } });
-    if (bad) { draw(bad + " row" + (bad === 1 ? " needs" : "s need") + " another look (shaded). Do the helper columns first, then combine them.", "no"); }
-    else { draw("✅ Every row is right. Nice work.", "ok"); if (onSolved) onSolved(); }
-  }
-  draw();
-}
-
-var CH13_STAGES = [
-/* Stage 0: Visual Model */
-function (chId, root) {
-  var html = '';
-  html += '<div class="concept-eyebrow">Stage 1 &middot; Visual Model</div>';
-  html += '<div class="concept-title">🚪 The Bridge Switchboard</div>';
-  html += '<div class="concept-body">';
-  html += '<p>On the bridge, officers control lamps with <strong>switches</strong>. A switch is either <strong>ON = 1</strong> (flag up) or <strong>OFF = 0</strong> (flag down). Three kinds of gate decide when a lamp lights.</p>';
-  html += '<p style="margin-top:10px"><strong>Mission:</strong> tap the switches and watch the lamps. Light the <strong>OR</strong> lamp using <strong>every different setting</strong> you can find. Each new one is logged below.</p>';
-  html += '<div id="ch13-s0-board"></div>';
-  html += '<div class="callout" id="ch13-s0-msg" style="display:none;margin-top:12px"></div>';
-  html += '</div>';
-  root.innerHTML = html;
-  switchboardWidget("ch13-s0-board", function () {
-    var m = document.getElementById("ch13-s0-msg");
-    m.style.display = "block";
-    m.innerHTML = '📌 <strong>AND</strong> needs both switches at 1. <strong>OR</strong> needs at least one. <strong>NOT</strong> flips a single switch (a bar over a letter, like ' + ov("A") + ', means NOT A). In an exam story these rules are always explained for you, so read them carefully and use them exactly.';
-    markStageDone(chId, 0);
-  });
-},
-
-/* Stage 1: Mental Strategy */
-function (chId, root) {
-  var html = '';
-  html += '<div class="concept-eyebrow">Stage 2 &middot; Mental Strategy</div>';
-  html += '<div class="concept-title">📋 Every Setting, Nothing Missed</div>';
-  html += '<div class="concept-body">';
-  html += '<p>To study a circuit, an engineer lists <strong>every possible setting</strong> of the switches. That list is called a <strong>truth table</strong>. Each switch is a flag: 1 = up, 0 = down.</p>';
-  html += '<p style="margin-top:10px">Build every setting of <strong>3 switches</strong> (A, B, C). Repeats are allowed, since two switches can both be 1.</p>';
-  html += '<div id="ch13-s1-list"></div>';
-  html += '<div class="callout" id="ch13-s1-summary" style="display:none;margin-top:12px"></div>';
-  html += '<div id="ch13-s1-q" style="display:none;margin-top:14px">';
-  html += '<p>A bigger control panel has <strong>4 switches</strong>. How many rows would its truth table need?</p>';
-  html += '<div id="ch13-s1-hints"></div><div id="ch13-s1-check" style="margin-top:12px"></div></div>';
-  html += '</div>';
-  root.innerHTML = html;
-  listBuilderWidget("ch13-s1-list", ["0", "1"], 3, "seq", chId, function (n) {
-    var s = document.getElementById("ch13-s1-summary");
-    s.style.display = "block";
-    s.innerHTML = '📌 You found <strong>' + n + '</strong> settings. Strategy: list them in <strong>counting order</strong> (the last switch changes fastest), and nothing gets skipped or doubled.';
-    document.getElementById("ch13-s1-q").style.display = "block";
-    progressiveHintWidget("ch13-s1-hints", chId, [
-      { label: "💡 Hint 1", html: "Think about what one extra switch does to the list. Each old setting can now be paired with the new switch ON, or with the new switch OFF." },
-      { label: "💡 Hint 2", html: "So adding a switch <strong>doubles</strong> the number of settings. You just found the number for 3 switches. Double it once." },
-      { label: "💡 Hint 3: full answer", html: "8 &times; 2 = <strong>16</strong>. (Or 2 &times; 2 &times; 2 &times; 2.) Type 16 below." }
-    ]);
-    answerCheckWidget("ch13-s1-check", 16, function () { markStageDone(chId, 1); });
-  });
-},
-
-/* Stage 2: General Rule */
-function (chId, root) {
-  var html = '';
-  html += '<div class="concept-eyebrow">Stage 3 &middot; General Rule</div>';
-  html += '<div class="concept-title">💡 Work Inside Out</div>';
-  html += '<div class="concept-body">';
-  html += '<p>The door-closer lamp is wired as <strong>L = (A · B) + ' + ov("C") + '</strong>. To evaluate a circuit, <strong>work from the inside out</strong>: first the NOT and the AND (the small parts), then the OR that joins them.</p>';
-  html += '<div class="callout engineer" style="margin-top:10px">Worked row: <strong>A=1, B=0, C=1</strong>.<br>A · B = 0 (not both are 1).<br>' + ov("C") + ' = 0 (C is 1, so NOT flips it).<br>Then 0 + 0 = <strong>0</strong>, so the lamp is dark.</div>';
-  html += '<p style="margin-top:12px">Now fill in the <strong>L</strong> column for all 8 rows. Tap a <strong>?</strong> to set it to 0 or 1. The two helper columns are done for you.</p>';
-  html += '<div id="ch13-s2-table"></div>';
-  html += '<div id="ch13-s2-tablehints"></div>';
-  html += '<div id="ch13-s2-q" style="display:none;margin-top:16px">';
-  html += '<p>Now look at your finished table. For how many of the 8 rows is the lamp <strong>lit</strong> (L = 1)?</p>';
-  html += '<div id="ch13-s2-hints"></div><div id="ch13-s2-check" style="margin-top:12px"></div></div>';
-  html += '</div>';
-  root.innerHTML = html;
-  var rows = kSequences([1, 0], 3);
-  var AND = function (x, y) { return (x && y) ? 1 : 0; }, OR = function (x, y) { return (x || y) ? 1 : 0; }, NOT = function (x) { return x ? 0 : 1; };
-  progressiveHintWidget("ch13-s2-tablehints", chId, [
-    { label: "💡 Hint 1", html: "Use the helper columns. L is lit when <strong>either</strong> helper is 1." },
-    { label: "💡 Hint 2", html: "A row is dark only when <strong>both</strong> helpers are 0: that needs C = 1 <em>and</em> A · B = 0." },
-    { label: "💡 Hint 3: the dark rows", html: "The dark rows are <strong>101, 011 and 001</strong>. Every other row is lit." }
-  ]);
-  truthTableWidget("ch13-s2-table", rows,
-    [{ label: "A · B", fn: AND }, { label: ov("C"), fn: function (x, y, z) { return NOT(z); } }],
-    "L",
-    function (x, y, z) { return OR(AND(x, y), NOT(z)); },
-    function () {
-      document.getElementById("ch13-s2-q").style.display = "block";
-      progressiveHintWidget("ch13-s2-hints", chId, [
-        { label: "💡 Hint 1", html: "Count the 1s down your L column. Cross each off as you go." },
-        { label: "💡 Hint 2", html: "Rows with C = 0 are always lit (4 rows). Rows with C = 1 are lit only when A · B = 1." },
-        { label: "💡 Hint 3: full answer", html: "4 rows (C = 0) + 1 row (A = B = C = 1) = <strong>5</strong>. Type 5 below." }
-      ]);
-      answerCheckWidget("ch13-s2-check", 5, function () { markStageDone(chId, 2); });
-    });
-},
-
-/* Stage 3: Why It Works */
-function (chId, root) {
-  var html = '';
-  html += '<div class="concept-eyebrow">Stage 4 &middot; Why It Works</div>';
-  html += '<div class="concept-title">🔍 Why Every Setting Appears Exactly Once</div>';
-  html += '<div class="concept-body">';
-  html += '<p>Here are just <strong>two</strong> switches as a decision tree. Switch A has two positions; whichever it takes, switch B again has two.</p>';
-  html += '<div class="svg-box">' + buildTreeSVG("Start", ["A = 1", "A = 0"], { "A = 1": ["B = 1", "B = 0"], "A = 0": ["B = 1", "B = 0"] }, 420) + '</div>';
-  html += '<p>Each path from Start to the end is one setting, and no setting can appear twice. This is the Multiplication Principle from Chapter 6 again. Build the explanation:</p>';
-  html += '<div id="ch13-s3-guided"></div>';
-  html += '</div>';
-  root.innerHTML = html;
-  guidedExplanationWidget("ch13-s3-guided", chId, 3, [
-    { t: "text", v: "A truth table has no missing or repeated rows because each switch has " },
-    { t: "blank", options: ["exactly two positions, ON or OFF", "just two states", "two choices"] },
-    { t: "text", v: ", and the choices " },
-    { t: "blank", options: ["multiply, so 3 switches give 2 × 2 × 2 = 8 rows", "multiply together: 2 × 2 × 2 = 8 rows", "are multiplied, giving 2 × 2 × 2 = 8"] },
-    { t: "text", v: "." }
-  ]);
-},
-
-/* Stage 4: Competition Challenge */
-function (chId, root) {
-  var html = '';
-  html += '<div class="concept-eyebrow">Stage 5 &middot; Competition Challenge</div>';
-  html += '<div class="concept-title">🏆 Cambridge Question</div>';
-  html += '<div class="concept-body">';
-  html += '<p>The bridge has three switches A, B, C (1 = ON, 0 = OFF). Rules: <strong>AND</strong> (·) is 1 only if both are 1. <strong>OR</strong> (+) is 1 if at least one is 1. A bar flips a value. The door-closer lamp is <strong>M = (A + B) · ' + ov("C") + '</strong>.</p>';
-  html += '<p style="margin-top:10px"><strong>(a)</strong> Set A = 0, B = 1, C = 0. Type <strong>1</strong> if M is lit, or <strong>0</strong> if it is dark.</p>';
-  html += '<div id="ch13-s4-ha"></div><div id="ch13-s4-a"></div>';
-  html += '<div id="ch13-s4-bq" style="display:none;margin-top:14px"><p><strong>(b)</strong> For how many of the 8 possible settings is M lit?</p><div id="ch13-s4-hb"></div><div id="ch13-s4-b"></div></div>';
-  html += '<div id="ch13-s4-cq" style="display:none;margin-top:14px"><p><strong>(c)</strong> Dr Pisit claims the lamps <strong>P = A · (B + C)</strong> and <strong>Q = (A · B) + (A · C)</strong> always agree. For how many of the 8 settings do P and Q show the <strong>same</strong> result?</p><div id="ch13-s4-hc"></div><div id="ch13-s4-c"></div></div>';
-  html += '<div class="callout" id="ch13-s4-stretch" style="display:none;margin-top:14px"><strong>🔴 Olympiad Stretch:</strong> In the Warp Zone castle, a door has 3 switches. The builder may decide, <strong>independently for each of the 8 settings</strong>, whether the door opens or stays shut. How many different door rules are possible?</div>';
-  html += '<div id="ch13-s4-hs" style="display:none"></div><div id="ch13-s4-s" style="display:none"></div>';
-  html += '</div>';
-  root.innerHTML = html;
-  progressiveHintWidget("ch13-s4-ha", chId, [
-    { label: "💡 Hint 1", html: "Work inside out: first A + B, then " + ov("C") + ", then join them with AND." },
-    { label: "💡 Hint 2: full answer", html: "A + B = 0 + 1 = 1. " + ov("C") + " = 1 (C is 0). Then 1 · 1 = <strong>1</strong>. Type 1." }
-  ]);
-  answerCheckWidget("ch13-s4-a", 1, function () {
-    document.getElementById("ch13-s4-bq").style.display = "block";
-    progressiveHintWidget("ch13-s4-hb", chId, [
-      { label: "💡 Hint 1", html: "M needs two things at once: A + B = 1 <em>and</em> " + ov("C") + " = 1. What does " + ov("C") + " = 1 say about C?" },
-      { label: "💡 Hint 2", html: "C must be 0. Then A and B can be anything except both 0. How many (A, B) pairs is that?" },
-      { label: "💡 Hint 3: full answer", html: "Of the 4 pairs for (A, B), only (0, 0) fails, so 3 pairs work. C is fixed at 0. The answer is <strong>3</strong>. Type 3." }
-    ]);
-    answerCheckWidget("ch13-s4-b", 3, function () {
-      document.getElementById("ch13-s4-cq").style.display = "block";
-      progressiveHintWidget("ch13-s4-hc", chId, [
-        { label: "💡 Hint 1", html: "Try it on a few rows, such as A=1, B=1, C=0 and A=0, B=1, C=1, and see whether P and Q ever differ." },
-        { label: "💡 Hint 2", html: "When A = 0, both P and Q are 0. When A = 1, P becomes B + C and Q becomes B + C too." },
-        { label: "💡 Hint 3: full answer", html: "They agree on every row, so the answer is <strong>8</strong>. Type 8." }
-      ]);
-      answerCheckWidget("ch13-s4-c", 8, function () {
-        document.getElementById("ch13-s4-stretch").style.display = "block";
-        document.getElementById("ch13-s4-hs").style.display = "block";
-        document.getElementById("ch13-s4-s").style.display = "block";
-        progressiveHintWidget("ch13-s4-hs", chId, [
-          { label: "💡 Hint 1", html: "Each of the 8 settings is one decision with 2 outcomes: open or shut." },
-          { label: "💡 Hint 2", html: "8 independent decisions with 2 choices each. Use the Multiplication Principle." },
-          { label: "💡 Hint 3: full answer", html: "2 &times; 2 &times; &hellip; (8 times) = 2<sup>8</sup> = <strong>256</strong>. Type 256." }
-        ]);
-        answerCheckWidget("ch13-s4-s", 256, function () { markStageDone(chId, 4); });
-      });
-    });
-  });
-}
-];
-
-var CHAPTER_STAGES = { ch13: CH13_STAGES, ch1: CH1_STAGES, ch2: CH2_STAGES, ch3: CH3_STAGES, ch4: CH4_STAGES, ch5: CH5_STAGES, ch6: CH6_STAGES, ch7: CH7_STAGES, ch8: CH8_STAGES, ch9: CH9_STAGES, ch10: CH10_STAGES, ch11: CH11_STAGES, ch12: CH12_STAGES };
+var CHAPTER_STAGES = { ch1: CH1_STAGES, ch2: CH2_STAGES, ch3: CH3_STAGES, ch4: CH4_STAGES, ch5: CH5_STAGES, ch6: CH6_STAGES, ch7: CH7_STAGES, ch8: CH8_STAGES, ch9: CH9_STAGES, ch10: CH10_STAGES, ch11: CH11_STAGES, ch12: CH12_STAGES };
 var CHAPTER_META = {};
 CHAPTERS.forEach(function (c) { CHAPTER_META[c.id] = c; });
 
@@ -3061,15 +2905,38 @@ function renderChapter(chId, stageIdx) {
 
   document.getElementById("app").innerHTML = html;
   var contentEl = document.getElementById("stage-content");
-  stageHintFn = null;
   CHAPTER_STAGES[chId][stageIdx](chId, contentEl);
 }
 
+/* The global hint button must NEVER rebuild the screen (that wiped in-progress work) and must not charge a star
+   for a generic nudge. Real layered hints with the answer on the last level are Phase 3. */
+var NUDGES = [
+  "Step 1: tap ONE object above. Any one. Engineers test first, polish later.",
+  "Pick ONE small case (2 or 3 items) and list everything by hand. Spot the pattern, then scale up.",
+  "Look at your last answer. What did you multiply or add? Say the rule out loud in your own words.",
+  "Tap the phrase that sounds closest to what you think. All the options are correct, so you cannot fail here.",
+  "Cambridge part first. Do ONE step, check it, then go on. The stretch question unlocks after it."
+];
 function hintCurrentChapter(chId) {
-  if (stageHintFn && stageHintFn()) return;   // reveal the stage's next hint in place (no re-render)
-  if (stageHintFn) return;                    // all hints already shown: nothing more to cost
-  useHint(chId);
-  render();
+  /* Best case: advance the hint ladder of the question J.J. is working on (no screen rebuild). */
+  var btns = document.querySelectorAll('button[id$="-hints-next"]');
+  if (btns.length) {
+    var btn = btns[0];
+    var box = btn.parentNode;
+    btn.click();
+    if (box && typeof box.scrollIntoView === "function") box.scrollIntoView({ block: "center", behavior: "smooth" });
+    return;
+  }
+  var idx = (route.view === "chapter" && route.stage >= 0 && route.stage <= 4) ? route.stage : 0;
+  var text = (route.view === "chapter") ? NUDGES[idx] : "Do just the next step on the list. Read it, try it, check it. One step at a time.";
+  var slot = document.getElementById("hint-slot");
+  if (!slot) {
+    slot = document.createElement("div");
+    slot.id = "hint-slot";
+    var app = document.getElementById("app");
+    if (app) app.appendChild(slot);
+  }
+  slot.innerHTML = '<div class="callout engineer" style="margin:12px 16px"><strong>💡 Engineer\'s nudge</strong><br>' + text + '</div>';
 }
 
 function nextStage(chId, currentStageIdx) {
@@ -3102,6 +2969,7 @@ function renderBoss1() {
   html += '<div class="boss-title">🚩 Flags A, B, C, D — but D is reserved</div>';
   html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">The bridge wants to hoist <strong>2 different flags in order</strong> (first flag, then second flag) to send a message. But flag <strong>D</strong> is reserved for SOS only — it can never be the <strong>first</strong> flag hoisted (it CAN be second). How many valid two-flag messages can be sent?</p>';
 
+  html += restrictedPoolVisualHtml(flags, [{ item: "D", note: "never first" }]);
   html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — DRAW</div><p>Sketch or picture all 4 flags: A, B, C, D.</p></div>';
   html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ORGANISE</div><p>List row by row, one starting flag at a time — cross out D as a starting flag before you begin.</p></div>';
   html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — COUNT</div><p>Reveal your rows below and count every valid message.</p></div>';
@@ -3138,7 +3006,7 @@ function renderBoss1() {
       for (var i = 0; i < found.length; i++) found[i] = true;
       foundCount = lbTarget.length;
       drawLb();
-      render();
+      refreshChapterNav();
     };
   }
   drawLb();
@@ -3148,8 +3016,7 @@ function renderBoss1() {
     st.done = true;
     saveProgress(PROGRESS);
     setTimeout(function () {
-      alert("👹 BOSS DEFEATED! Part A of the Combinatorics Sketchbook is complete. Chief Engineer, Part B is next.");
-      nav("home");
+      showVictory("👹 BOSS DEFEATED! Part A of the Combinatorics Sketchbook is complete. Chief Engineer, Part B is next.");
     }, 300);
   });
 }
@@ -3174,16 +3041,16 @@ function renderBoss2() {
   html += '<div class="boss-title">📸 Assembling the Maiden Voyage Photo</div>';
   html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">The bridge is setting up a photo. Work through each part below, in order — each part uses one of the four skills from Part B.</p>';
 
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — SIGNAL (Addition)</div><p>The team sends one signal: EITHER a flag (3 types) OR a lantern (2 types). How many signal choices?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — SIGNAL (Addition)</div><p>The team sends one signal: EITHER a flag (3 types) OR a lantern (2 types). How many signal choices?</p></div>' + '<div style="margin:6px 0 2px">' + categorizedPoolVisualHtml(["F1","F2","F3"],"Flags","#C1503A",["L1","L2"],"Lanterns","#D9A441") + '</div>';
   html += '<div id="boss2-check1" style="margin-top:8px"></div>';
 
   html += '<div id="boss2-part2" style="display:none">';
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ROSTER (Permutation)</div><p>From 5 available officers, assign a Captain AND a First Officer for the photo (2 distinct roles, order matters). How many rosters?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ROSTER (Permutation)</div><p>From 5 available officers, assign a Captain AND a First Officer for the photo (2 distinct roles, order matters). How many rosters?</p></div>' + '<div style="margin:6px 0 2px">' + slotsVisualHtml(["Captain","First Officer"],"from officers A B C D E · 2 DIFFERENT people") + restrictedPoolVisualHtml(OFFICERS5, []) + '</div>';
   html += '<div id="boss2-check2" style="margin-top:8px"></div>';
   html += '</div>';
 
   html += '<div id="boss2-part3" style="display:none">';
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — HONOR GUARD (Combination)</div><p>The Captain and First Officer are now used up — 3 officers remain. Choose 2 of them (unordered) to stand as the honor guard. How many teams?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — HONOR GUARD (Combination)</div><p>The Captain and First Officer are now used up — 3 officers remain. Choose 2 of them (unordered) to stand as the honor guard. How many teams?</p></div>' + '<div style="margin:6px 0 2px">' + slotsVisualHtml(["Guard","Guard"],"from the 3 officers left · order does NOT matter") + restrictedPoolVisualHtml(["C","D","E"], []) + '</div>';
   html += '<div id="boss2-check3" style="margin-top:8px"></div>';
   html += '</div>';
 
@@ -3213,8 +3080,7 @@ function renderBoss2() {
           st.done = true;
           saveProgress(PROGRESS);
           setTimeout(function () {
-            alert("👹 BOSS DEFEATED! Part B of the Combinatorics Sketchbook is complete. Chief Engineer, Part C is next.");
-            nav("home");
+            showVictory("👹 BOSS DEFEATED! Part B of the Combinatorics Sketchbook is complete. Chief Engineer, Part C is next.");
           }, 300);
         });
       });
@@ -3242,16 +3108,16 @@ function renderBoss3() {
   html += '<div class="boss-title">🔍 Inspection Day Logistics</div>';
   html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">Work through each part below, in order — each part uses one of the three Part C skills.</p>';
 
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — RESTRICTION</div><p>5 officers line up for inspection. Officer A is still recovering and can\'t stand in Position 1. How many valid lineups?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — RESTRICTION</div><p>5 officers line up for inspection. Officer A is still recovering and can\'t stand in Position 1. How many valid lineups?</p></div>' + '<div style="margin:6px 0 2px">' + slotsVisualHtml(["Pos 1","Pos 2","Pos 3","Pos 4","Pos 5"],"officers A B C D E") + restrictedPoolVisualHtml(OFFICERS5, [{ item: "A", note: "not Pos 1" }]) + '</div>';
   html += '<div id="boss3-check1" style="margin-top:8px"></div>';
 
   html += '<div id="boss3-part2" style="display:none">';
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — COMPLEMENT</div><p>6 crew members (2 Seniors, 4 Juniors) need a maintenance team of 3 with at least one Senior. How many valid teams?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — COMPLEMENT</div><p>6 crew members (2 Seniors, 4 Juniors) need a maintenance team of 3 with at least one Senior. How many valid teams?</p></div>' + '<div style="margin:6px 0 2px">' + categorizedPoolVisualHtml(["S1","S2"],"Seniors","#C1503A",["J1","J2","J3","J4"],"Juniors","#0E2A45") + '</div>';
   html += '<div id="boss3-check2" style="margin-top:8px"></div>';
   html += '</div>';
 
   html += '<div id="boss3-part3" style="display:none">';
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — REPETITION</div><p>A signal uses 2 lantern colours across 3 positions, and colours CAN repeat. How many possible signals?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — REPETITION</div><p>A signal uses 2 lantern colours across 3 positions, and colours CAN repeat. How many possible signals?</p></div>' + '<div style="margin:6px 0 2px">' + slotsVisualHtml(["Pos 1","Pos 2","Pos 3"],"2 lantern colours · colours CAN repeat") + '</div>';
   html += '<div id="boss3-check3" style="margin-top:8px"></div>';
   html += '</div>';
 
@@ -3281,8 +3147,7 @@ function renderBoss3() {
           st.done = true;
           saveProgress(PROGRESS);
           setTimeout(function () {
-            alert("👹 BOSS DEFEATED! Part C of the Combinatorics Sketchbook is complete. Chief Engineer, Part D is next.");
-            nav("home");
+            showVictory("👹 BOSS DEFEATED! Part C of the Combinatorics Sketchbook is complete. Chief Engineer, Part D is next.");
           }, 300);
         });
       });
@@ -3310,21 +3175,21 @@ function renderBoss4() {
   html += '<div class="boss-title">🎓 The Final Inspection Voyage</div>';
   html += '<p style="font-size:13.5px;line-height:1.5;margin-top:8px">Work through each part below, in order — each one uses a skill from a different Part of the manual.</p>';
 
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — DIALS (Part A)</div><p>The engine has 3 power settings AND 2 antenna types. How many full setups?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 1 — DIALS (Part A)</div><p>The engine has 3 power settings AND 2 antenna types. How many full setups?</p></div>' + '<div style="margin:6px 0 2px">' + categorizedPoolVisualHtml(["P1","P2","P3"],"Power","#0E2A45",["X1","X2"],"Antenna","#D9A441") + '</div>';
   html += '<div id="boss4-check1" style="margin-top:8px"></div>';
 
   html += '<div id="boss4-part2" style="display:none">';
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ROSTER (Part B)</div><p>From 5 officers, assign a Captain AND a First Officer (2 distinct roles, order matters). How many rosters?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 2 — ROSTER (Part B)</div><p>From 5 officers, assign a Captain AND a First Officer (2 distinct roles, order matters). How many rosters?</p></div>' + '<div style="margin:6px 0 2px">' + slotsVisualHtml(["Captain","First Officer"],"from officers A B C D E · 2 DIFFERENT people") + '</div>';
   html += '<div id="boss4-check2" style="margin-top:8px"></div>';
   html += '</div>';
 
   html += '<div id="boss4-part3" style="display:none">';
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — TEAM (Part C)</div><p>6 crew (2 Seniors, 4 Juniors) need a team of 3 with at least one Senior. How many valid teams?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 3 — TEAM (Part C)</div><p>6 crew (2 Seniors, 4 Juniors) need a team of 3 with at least one Senior. How many valid teams?</p></div>' + '<div style="margin:6px 0 2px">' + categorizedPoolVisualHtml(["S1","S2"],"Seniors","#C1503A",["J1","J2","J3","J4"],"Juniors","#0E2A45") + '</div>';
   html += '<div id="boss4-check3" style="margin-top:8px"></div>';
   html += '</div>';
 
   html += '<div id="boss4-part4" style="display:none">';
-  html += '<div class="boss-step"><div class="boss-step-label">STEP 4 — SIGNAL (Part D)</div><p>A signal uses 2 lantern colours across 3 positions, colours CAN repeat. How many signals?</p></div>';
+  html += '<div class="boss-step"><div class="boss-step-label">STEP 4 — SIGNAL (Part D)</div><p>A signal uses 2 lantern colours across 3 positions, colours CAN repeat. How many signals?</p></div>' + '<div style="margin:6px 0 2px">' + slotsVisualHtml(["Pos 1","Pos 2","Pos 3"],"2 lantern colours · colours CAN repeat") + '</div>';
   html += '<div id="boss4-check4" style="margin-top:8px"></div>';
   html += '</div>';
 
@@ -3357,8 +3222,7 @@ function renderBoss4() {
             st.done = true;
             saveProgress(PROGRESS);
             setTimeout(function () {
-              alert("🎓 GRADUATION COMPLETE! All 12 chapters and 4 Boss Battles cleared. The Master Map is now unlocked, Chief Engineer.");
-              nav("home");
+              showVictory("🎓 GRADUATION COMPLETE! All 12 chapters and 4 Boss Battles cleared. The Master Map is now unlocked, Chief Engineer.");
             }, 300);
           });
         });
@@ -3386,7 +3250,6 @@ function renderMasterMap() {
   html += '</div></div>';
 
   PARTS.forEach(function (part) {
-    if (part.bonus) return;
     var chapters = CHAPTERS.filter(function (c) { return c.part === part.key; });
     var html2 = '<div class="section"><div class="part-header">' + part.title + '</div>';
     html2 += '<div class="missions">';
@@ -3444,6 +3307,7 @@ function renderDrawMemory(chId) {
   html += '<div class="concept-body"><p>' + DRAW_PROMPTS[chId] + '</p>';
   html += '<p style="color:var(--ink-soft);font-size:12.5px">Close the chapter in your mind first. Sketch on the pad below with your finger or mouse.</p>';
   html += '<div class="pad-box"><canvas id="draw-canvas" height="260"></canvas></div>';
+  html += '<div id="pad-saved-note" style="display:none;font-size:12.5px;color:var(--ink-soft);margin-top:6px">📌 Your saved drawing is loaded. Add to it, or tap Clear to start fresh.</div>';
   html += '<div class="pad-tools"><button class="btn small" id="pad-clear">Clear</button></div>';
   html += '<button class="btn primary" id="pad-done" style="margin-top:14px;width:100%">I drew it from memory ✓</button>';
   html += '</div></div>';
@@ -3452,8 +3316,17 @@ function renderDrawMemory(chId) {
 
   var canvas = document.getElementById("draw-canvas");
   var ctx = canvas.getContext("2d");
-  function fit() { canvas.width = canvas.clientWidth * 2; canvas.height = 260 * 2; ctx.scale(2,2); ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#0E2A45"; }
+  var cssW = canvas.clientWidth || 320;
+  function paper() { ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, cssW, 260); }
+  function fit() { canvas.width = cssW * 2; canvas.height = 260 * 2; ctx.scale(2,2); ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.strokeStyle = "#0E2A45"; paper(); }
   fit();
+  var saved = loadDrawings()[chId];
+  if (saved && typeof Image !== "undefined") {
+    var img = new Image();
+    img.onload = function () { ctx.drawImage(img, 0, 0, cssW, 260); };
+    img.src = saved;
+    var note = document.getElementById("pad-saved-note"); if (note) note.style.display = "block";
+  }
   var drawing = false, lastX = 0, lastY = 0;
   function pos(e) {
     var rect = canvas.getBoundingClientRect();
@@ -3471,15 +3344,21 @@ function renderDrawMemory(chId) {
   function end() { drawing = false; }
   canvas.addEventListener("mousedown", start);
   canvas.addEventListener("mousemove", move);
-  window.addEventListener("mouseup", end);
+  canvas.addEventListener("mouseup", end);
+  canvas.addEventListener("mouseleave", end);
   canvas.addEventListener("touchstart", start, { passive: false });
   canvas.addEventListener("touchmove", move, { passive: false });
   canvas.addEventListener("touchend", end);
 
-  document.getElementById("pad-clear").onclick = function () { ctx.clearRect(0,0,canvas.width,canvas.height); };
+  document.getElementById("pad-clear").onclick = function () { paper(); };
   document.getElementById("pad-done").onclick = function () {
     PROGRESS.drawMemory[chId] = true;
     saveProgress(PROGRESS);
+    try {
+      var url = canvas.toDataURL("image/png");
+      if (url.length > DRAW_MAX) url = canvas.toDataURL("image/jpeg", 0.6);
+      if (url.length <= DRAW_MAX) { var all = loadDrawings(); all[chId] = url; saveDrawings(all); }
+    } catch (e) {}
     nav("home");
   };
 }
@@ -3514,7 +3393,7 @@ function renderErrorLog() {
   });
   html += '</div>';
   html += '<textarea class="note" id="err-note" placeholder="What happened, in one line?"></textarea>';
-  html += '<button class="btn primary small" id="err-save" style="margin-top:10px">Save to Log</button>';
+  html += '<button class="btn primary small" id="err-save" style="margin-top:10px">Save to Log</button><div id="err-msg" style="margin-top:8px;font-size:12.5px;color:var(--danger)"></div>';
   html += '</div></div></div>';
 
   html += '<div class="section"><div class="section-label">Past Entries</div>';
@@ -3541,7 +3420,9 @@ function renderErrorLog() {
   });
   document.getElementById("err-save").onclick = function () {
     var note = document.getElementById("err-note").value.trim();
-    if (!selected || !note) { alert("Pick an error type and write a one-line note first."); return; }
+    if (!selected || !note) { var fb = document.getElementById("err-msg");
+      if (fb) fb.textContent = "Pick an error type and write a one-line note first.";
+      return; }
     log.push({ code: selected, note: note, ts: Date.now() });
     saveErrorLog(log);
     renderErrorLog();
@@ -3551,193 +3432,6 @@ function renderErrorLog() {
 /* =========================================================
    MAIN RENDER DISPATCH
    ========================================================= */
-
-/* =========================================================
-   SHIP'S LOG: save and restore
-   ========================================================= */
-
-var shipLogMsg = null;     // {kind:'ok'|'warn', text}
-var pendingAdd = null;     // {progress, errorLog, label}: waiting for the "Add" tap
-
-function describeProgress(p, errCount) {
-  var chaptersCleared = 0, bosses = 0;
-  CH_IDS.forEach(function (id) { if (p.chapters[id] && p.chapters[id].done) chaptersCleared++; });
-  BOSS_IDS.forEach(function (id) { if (p.chapters[id] && p.chapters[id].done) bosses++; });
-  var s = countStages(p) + " of 64 stages \u00B7 " + chaptersCleared + " chapters cleared \u00B7 " + bosses + " boss" + (bosses === 1 ? "" : "es");
-  if (errCount) s += " \u00B7 " + errCount + " error-log entr" + (errCount === 1 ? "y" : "ies");
-  return s;
-}
-function daysAgoText(ts) {
-  if (!ts) return "not yet";
-  var d = Math.floor((Date.now() - ts) / 86400000);
-  return d <= 0 ? "today" : (d === 1 ? "yesterday" : d + " days ago");
-}
-function dateStamp() {
-  var d = new Date(), z = function (n) { return (n < 10 ? "0" : "") + n; };
-  return d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
-}
-function applyAdd(incoming) {
-  // one undo snapshot first, then merge (never removes anything)
-  lsSet(SNAP_KEY, JSON.stringify({ at: Date.now(), progress: PROGRESS, errorLog: loadErrorLog() }));
-  var before = countStages(PROGRESS);
-  PROGRESS = mergeProgress(PROGRESS, incoming.progress);
-  saveProgress(PROGRESS);
-  if (incoming.errorLog) saveErrorLog(mergeErrorLogs(loadErrorLog(), incoming.errorLog));
-  return countStages(PROGRESS) - before;
-}
-function undoRestore() {
-  var snap = lsJson(SNAP_KEY);
-  if (!snap || !snap.progress) return false;
-  PROGRESS = normalizeProgress(snap.progress);
-  saveProgress(PROGRESS);
-  saveErrorLog(normalizeErrorLog(snap.errorLog));
-  try { localStorage.removeItem(SNAP_KEY); } catch (e) {}
-  return true;
-}
-
-function renderShipLog() {
-  var code = encodeRestoreCode(PROGRESS);
-  var meta = loadBackupMeta();
-  var snap = lsJson(SNAP_KEY);
-  var html = "";
-  html += '<div class="hdr"><button class="hdr-back" onclick="CSApp.nav(\'home\')">\u2039 Chart Room</button>';
-  html += '<div class="hdr-eyebrow">Chief Engineer\u2019s Journal</div>';
-  html += '<div class="hdr-title">\uD83D\uDCD3 Ship\u2019s Log</div>';
-  html += '<div class="hdr-sub">Save your progress so it can never be lost.</div></div>';
-
-  if (!storageOk) {
-    html += '<div class="section"><div class="warnbox"><strong>Progress can\u2019t be saved in this mode.</strong> This usually means Private Browsing, or a file opened from AirDrop. Open the website in normal Safari to save. The code below still works for copying what you have now.</div></div>';
-  }
-  if (shipLogMsg) {
-    html += '<div class="section"><div class="' + (shipLogMsg.kind === "ok" ? "okbox" : "warnbox") + '">' + escapeHtml(shipLogMsg.text) + '</div></div>';
-    shipLogMsg = null;
-  }
-
-  html += '<div class="section"><div class="concept-card"><div class="concept-title">1 \u00B7 Copy my Restore Code</div><div class="concept-body">';
-  html += '<p>Right now: <strong>' + escapeHtml(describeProgress(PROGRESS, 0)) + '</strong>, with stars and XP.</p>';
-  html += '<div class="code-box" id="sl-code">' + escapeHtml(code) + '</div>';
-  html += '<button class="btn primary" id="sl-copy" style="width:100%;margin-top:10px">Copy my code</button>';
-  html += '<p style="margin-top:10px;font-size:12.5px;color:var(--ink-soft)">Paste it into Notes or a message to yourself. Last saved: <strong>' + daysAgoText(meta && meta.at) + '</strong>.</p>';
-  html += '</div></div></div>';
-
-  html += '<div class="section"><div class="concept-card"><div class="concept-title">2 \u00B7 Backup file</div><div class="concept-body">';
-  html += '<p>A file with everything, including the Error Log. Save it to Files or iCloud Drive.</p>';
-  html += '<div class="log-btns"><button class="btn primary" id="sl-save">Save backup file</button><button class="btn" id="sl-load">Load backup file</button></div>';
-  html += '<input type="file" id="sl-file" accept=".json,application/json" style="display:none" />';
-  html += '</div></div></div>';
-
-  html += '<div class="section"><div class="concept-card"><div class="concept-title">3 \u00B7 Restore from a code</div><div class="concept-body">';
-  html += '<p>Paste a code to add its progress to this iPad. <strong>Nothing is ever erased.</strong></p>';
-  html += '<textarea class="note" id="sl-paste" placeholder="CSK-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" style="font-family:var(--mono);min-height:64px"></textarea>';
-  html += '<button class="btn" id="sl-check" style="width:100%;margin-top:10px">Check this code</button>';
-  html += '</div></div></div>';
-
-  html += '<div class="section" id="sl-preview"></div>';
-
-  if (snap && snap.progress) {
-    html += '<div class="section"><div class="callout engineer">Changed your mind about the last restore? <button class="btn small" id="sl-undo" style="margin-left:6px">Undo it</button></div></div>';
-  }
-  html += '<div class="foot-note">Moving to a new iPad, a new browser or the Home Screen? Those start empty. Paste your code there and the progress comes back.</div>';
-
-  document.getElementById("app").innerHTML = html;
-  wireShipLog(code);
-  if (pendingAdd) showPreview();
-}
-
-function showPreview() {
-  var el = document.getElementById("sl-preview");
-  if (!el || !pendingAdd) return;
-  var merged = mergeProgress(PROGRESS, pendingAdd.progress);
-  var gain = countStages(merged) - countStages(PROGRESS);
-  var h = '<div class="concept-card"><div class="concept-title">' + escapeHtml(pendingAdd.label) + '</div><div class="concept-body">';
-  h += '<p>It holds: <strong>' + escapeHtml(describeProgress(pendingAdd.progress, pendingAdd.errorLog ? pendingAdd.errorLog.length : 0)) + '</strong>.</p>';
-  if (gain > 0) {
-    h += '<p>Adding it gives this iPad <strong>' + gain + ' more stage' + (gain === 1 ? "" : "s") + '</strong>. Nothing is erased.</p>';
-  } else {
-    h += '<p>This iPad already has everything in it. (Stars, XP and the Error Log can still be topped up.)</p>';
-  }
-  h += '<div class="log-btns"><button class="btn primary" id="sl-apply">Add to this iPad</button><button class="btn" id="sl-cancel">Cancel</button></div>';
-  h += '</div></div>';
-  el.innerHTML = h;
-  document.getElementById("sl-apply").onclick = function () {
-    var added = applyAdd(pendingAdd);
-    pendingAdd = null;
-    shipLogMsg = { kind: "ok", text: added > 0 ? "Done! " + added + " stage" + (added === 1 ? "" : "s") + " added. Your Chart Room is up to date." : "Done. Everything was already here, and the extras were topped up." };
-    renderShipLog();
-  };
-  document.getElementById("sl-cancel").onclick = function () { pendingAdd = null; renderShipLog(); };
-  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-}
-
-function wireShipLog(code) {
-  document.getElementById("sl-copy").onclick = function () {
-    var done = function () { markBackedUp(); shipLogMsg = { kind: "ok", text: "Copied! Paste it into Notes so it\u2019s safe." }; renderShipLog(); };
-    var fallback = function () {
-      var box = document.getElementById("sl-code"), ok = false;
-      try { var r = document.createRange(); r.selectNodeContents(box); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); ok = document.execCommand("copy"); } catch (e) {}
-      if (ok) done(); else { shipLogMsg = { kind: "warn", text: "I couldn\u2019t copy automatically. Press and hold the code, choose Copy, then paste it into Notes." }; renderShipLog(); }
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, fallback); else fallback();
-  };
-
-  document.getElementById("sl-save").onclick = function () {
-    var text = buildBundle(PROGRESS, loadErrorLog(), new Date().toISOString());
-    var name = "combinatorics-backup-" + dateStamp() + ".json";
-    var saved = function () { markBackedUp(); shipLogMsg = { kind: "ok", text: "Backup file ready. Keep it in Files or iCloud Drive." }; renderShipLog(); };
-    try {
-      var file = new File([text], name, { type: "application/json" });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: "Combinatorics backup" }).then(saved, function (e) { /* cancelled: nothing saved, nothing claimed */ });
-        return;
-      }
-    } catch (e) {}
-    try {
-      var blob = new Blob([text], { type: "application/json" }), url = URL.createObjectURL(blob), a = document.createElement("a");
-      a.href = url; a.download = name; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
-      saved();
-    } catch (e) { shipLogMsg = { kind: "warn", text: "This browser can\u2019t save files. Use the Restore Code instead." }; renderShipLog(); }
-  };
-
-  var fileInput = document.getElementById("sl-file");
-  document.getElementById("sl-load").onclick = function () { fileInput.value = ""; fileInput.click(); };
-  fileInput.onchange = function () {
-    var f = fileInput.files && fileInput.files[0];
-    if (!f) return;
-    var rd = new FileReader();
-    rd.onload = function () {
-      var res = readBundle(String(rd.result || ""));
-      if (!res.ok) {
-        shipLogMsg = { kind: "warn", text: res.reason === "empty" ? "That backup has no progress in it." : "That file isn\u2019t a Combinatorics backup. Nothing was changed." };
-        pendingAdd = null; renderShipLog(); return;
-      }
-      pendingAdd = { progress: res.progress, errorLog: res.errorLog, label: "Backup file found" };
-      renderShipLog();
-    };
-    rd.onerror = function () { shipLogMsg = { kind: "warn", text: "I couldn\u2019t read that file. Nothing was changed." }; renderShipLog(); };
-    rd.readAsText(f);
-  };
-
-  document.getElementById("sl-check").onclick = function () {
-    var res = decodeRestoreCode(document.getElementById("sl-paste").value);
-    if (!res.ok) {
-      var why = { length: "That code is the wrong length. It should look like CSK-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX.",
-                  chars: "That code has a character I don\u2019t recognise. Check it against the original.",
-                  checksum: "One character looks wrong. Check it against the original, or paste it again.",
-                  version: "That code is from a different version of the app." }[res.reason];
-      shipLogMsg = { kind: "warn", text: why + " Nothing was changed." };
-      pendingAdd = null; renderShipLog(); return;
-    }
-    pendingAdd = { progress: res.progress, errorLog: null, label: "Code accepted" };
-    renderShipLog();
-  };
-
-  var undo = document.getElementById("sl-undo");
-  if (undo) undo.onclick = function () {
-    shipLogMsg = undoRestore() ? { kind: "ok", text: "Undone. Progress is back to how it was before the last restore." } : { kind: "warn", text: "Nothing to undo." };
-    pendingAdd = null; renderShipLog();
-  };
-}
 
 function render() {
   if (route.view === "home") renderHome();
@@ -3749,7 +3443,6 @@ function render() {
   else if (route.view === "mastermap") renderMasterMap();
   else if (route.view === "drawmemory") renderDrawMemory(route.chapterId);
   else if (route.view === "errorlog") renderErrorLog();
-  else if (route.view === "shiplog") renderShipLog();
 }
 
 window.CSApp = {
